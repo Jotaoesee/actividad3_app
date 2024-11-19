@@ -1,6 +1,6 @@
-import 'package:actividad3_app/pantallas/registro.dart';
+import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:flutter/material.dart';
-import 'package:actividad3_app/pantallas/inicio.dart';  // Asegúrate de importar la pantalla correcta.
+import 'package:actividad3_app/pantallas/registro.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +17,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Registro(),
+      initialRoute: '/', // Establecer la ruta inicial
+      routes: {
+        '/': (context) => const Inicio(), // Pantalla de inicio de sesión
+        '/registro': (context) => const Registro(), // Pantalla de registro
+      },
     );
   }
 }

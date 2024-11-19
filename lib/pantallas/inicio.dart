@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'registro.dart';  // Importar la pantalla de registro
 
 class Inicio extends StatelessWidget {
   const Inicio({super.key});
@@ -83,7 +84,11 @@ class Inicio extends StatelessWidget {
                       textStyle: const TextStyle(fontSize: 16),
                     ),
                     onPressed: () {
-                      print("Registrar sesión presionado");
+                      // Navegar a la pantalla de registro
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Registro()),
+                      );
                     },
                     child: const Text(
                       "Registrar sesión",
