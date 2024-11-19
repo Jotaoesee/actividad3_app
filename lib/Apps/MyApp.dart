@@ -1,4 +1,4 @@
-import 'package:actividad3_app/pantallas/inicio_sesion.dart';
+import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {
@@ -6,7 +6,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    InicioSesion inicioSesion = const InicioSesion();
+    Inicio inicioSesion = const Inicio();
     MaterialApp app =  const MaterialApp(title: "Mi primera App",);
     return app;
   }
