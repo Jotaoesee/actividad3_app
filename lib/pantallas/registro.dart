@@ -12,12 +12,12 @@ class Registro extends StatelessWidget {
       ),
       body: Container(
         color: const Color.fromARGB(255, 122, 193, 255),
-        child: const Padding(
-          padding: EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
           child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 "Crear cuenta",
                 style: TextStyle(
                   fontSize: 30,
@@ -25,8 +25,8 @@ class Registro extends StatelessWidget {
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 20),
-              TextField(
+              const SizedBox(height: 20),
+              const TextField(
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -41,8 +41,8 @@ class Registro extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              TextField(
+              const SizedBox(height: 20),
+              const TextField(
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -57,8 +57,8 @@ class Registro extends StatelessWidget {
                   ),
                 ),
               ),
-               SizedBox(height: 20),
-               TextField(
+              const SizedBox(height: 20),
+              const TextField(
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -73,9 +73,24 @@ class Registro extends StatelessWidget {
                   ),
                 ),
               ),
-            ]
+              const SizedBox(height: 30),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 28, 108, 178),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  textStyle: const TextStyle(fontSize: 16),
+                ),
+                onPressed: () {
+                  print("Registro completado");
+                },
+                child: const Text(
+                  "Registrarse",
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
           ),
-        )
+        ),
       ),
     );
   }
