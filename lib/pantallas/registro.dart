@@ -47,7 +47,17 @@ class Registro extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 28, 108, 178),
       ),
       body: Container(
-        color: const Color.fromARGB(255, 122, 193, 255),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF0D47A1),
+              Color(0xFF1F77D3),
+              Color(0xFF4AA3F3), 
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -69,6 +79,7 @@ class Registro extends StatelessWidget {
                   fillColor: Colors.white,
                   labelText: 'Correo electrónico',
                   labelStyle: TextStyle(color: Colors.black87),
+                  prefixIcon: Icon(Icons.email, color: Colors.grey,),
                   border: OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey),
@@ -87,6 +98,7 @@ class Registro extends StatelessWidget {
                   fillColor: Colors.white,
                   labelText: 'Contraseña',
                   labelStyle: TextStyle(color: Colors.black87),
+                  prefixIcon: Icon(Icons.lock, color: Colors.grey),
                   border: OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey),
@@ -105,6 +117,7 @@ class Registro extends StatelessWidget {
                   fillColor: Colors.white,
                   labelText: 'Confirmar Contraseña',
                   labelStyle: TextStyle(color: Colors.black87),
+                  prefixIcon: Icon(Icons.lock_outline, color: Colors.grey),
                   border: OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey),
