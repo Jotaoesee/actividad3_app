@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Registro extends StatefulWidget {
   @override
@@ -10,8 +11,8 @@ class _RegistroState extends State<Registro> {
   final TextEditingController controladorContrasena = TextEditingController();
   final TextEditingController controladorConfirmarContrasena = TextEditingController();
 
-  bool esPresionado = false; // Para animar el boton
-  bool esContrasenaVisible = false; // Para controlar la visibilidad de la contrasena
+  bool esPresionado = false;
+  bool esContrasenaVisible = false;
 
   void validarFormulario(BuildContext contexto) {
     String email = controladorEmail.text.trim();
@@ -158,6 +159,52 @@ class _RegistroState extends State<Registro> {
                 ),
               ),
               const SizedBox(height: 30),
+
+              // Sección de iconos de redes sociales con líneas
+              const Text(
+                "o con tus redes sociales",
+                style: TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.facebook,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      // Acción para Facebook
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  IconButton(
+                    icon: const Icon(
+                      FontAwesomeIcons.google,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      // Acción para Google
+                    },
+                  ),
+                  const SizedBox(width: 20),
+                  IconButton(
+                    icon: const FaIcon(
+                      FontAwesomeIcons.twitter,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      // Acción para Twitter
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
+
               GestureDetector(
                 onTapDown: (_) {
                   setState(() {
