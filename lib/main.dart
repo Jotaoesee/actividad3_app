@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/', // Establecer la ruta inicial
       routes: {
         '/': (context) => const Inicio(), // Pantalla de inicio de sesión
-        '/registro': (context) => const Registro(), // Pantalla de registro
+        '/registro': (context) => Registro(), // Pantalla de registro
       },
     );
   }

@@ -87,7 +87,7 @@ class Inicio extends StatelessWidget {
                       // Navegar a la pantalla de registro
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const Registro()),
+                        MaterialPageRoute(builder: (context) => Registro()),
                       );
                     },
                     child: const Text(
