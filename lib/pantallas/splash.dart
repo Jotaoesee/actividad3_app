@@ -1,100 +1,74 @@
 import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
-class Splash extends StatefulWidget {
-  const Splash({super.key});
-
+class SplashScreen extends StatefulWidget {
   @override
-  _SplashState createState() => _SplashState();
+  _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<Offset> _offsetAnimation;
+class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
 
-    // Inicializamos el AnimationController con la duración de la animación
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this, // Necesario para que la animación se sincronice con el ciclo de vida del widget
-    )..forward();  // Ejecutamos la animación inmediatamente
+    _controller = AnimationController(
+      duration: const Duration(seconds: 5),
+      vsync: this,
+    );
 
-    // Definimos la animación de desplazamiento (SlideTransition)
-    _offsetAnimation = Tween<Offset>(
-      begin: const Offset(0.0, 1.0),  // Comienza fuera de la pantalla, en la parte inferior
-      end: Offset.zero,  // Termina en la posición original
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,  // Tipo de curva para suavizar la animación
-    ));
+    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller)
+      ..addListener(() {
+        setState(() {});
+      });
 
-    // Redirige automáticamente a la siguiente pantalla después de 3 segundos
-    Future.delayed(const Duration(seconds: 3), () {
+    _controller.forward();
+
+    Timer(const Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        _crearRutaConAnimacion(),
+        MaterialPageRoute(builder: (context) => const Inicio()),
       );
     });
   }
 
-  // Función que crea la transición personalizada de la pantalla de inicio
-  PageRouteBuilder _crearRutaConAnimacion() {
-    return PageRouteBuilder(
-      pageBuilder: (context, animation, secondaryAnimation) => const Inicio(),  // Página de destino
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        // Animación de desvanecimiento
-        var tween = Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeIn));
-        var opacityAnimation = animation.drive(tween);
-
-        return FadeTransition(
-          opacity: opacityAnimation,  // Aplicamos la animación de opacidad
-          child: child,
-        );
-      },
-    );
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF0D47A1),
-              Color(0xFF1F77D3),
-              Color(0xFF4AA3F3),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: SlideTransition(
-            position: _offsetAnimation,  // Animación de deslizamiento
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.app_registration, // Logo de ejemplo
-                  size: 80,
-                  color: Colors.white,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  "Mi Aplicación",  // Nombre de la aplicación
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+      backgroundColor: Colors.blueAccent,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Icon(
+              Icons.flutter_dash,
+              size: 100,
+              color: Colors.white,
             ),
-          ),
+            const SizedBox(height: 30),
+            Container(
+              width: 200,
+              height: 10,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: LinearProgressIndicator(
+                value: _animation.value,
+                backgroundColor: Colors.grey[300],
+                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+            ),
+          ],
         ),
       ),
     );
