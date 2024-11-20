@@ -6,7 +6,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Inicio inicioSesion = const Inicio();
     MaterialApp app =  const MaterialApp(title: "Mi primera App",);
     return app;
   }

@@ -1,14 +1,14 @@
 import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:flutter/material.dart';
 
-class PantallaDeInicio extends StatefulWidget {
-  const PantallaDeInicio({super.key});
+class Splash extends StatefulWidget {
+  const Splash({super.key});
 
   @override
-  _PantallaDeInicioState createState() => _PantallaDeInicioState();
+  _SplashState createState() => _SplashState();
 }
 
-class _PantallaDeInicioState extends State<PantallaDeInicio> with SingleTickerProviderStateMixin {
+class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<Offset> _offsetAnimation;
 

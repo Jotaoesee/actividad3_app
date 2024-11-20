@@ -1,4 +1,5 @@
 import 'package:actividad3_app/pantallas/registro.dart';
+import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -178,35 +179,20 @@ class _InicioState extends State<Inicio> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 28, 108, 178),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                      textStyle: const TextStyle(fontSize: 16),
-                    ),
-                    onPressed: _validarYIniciarSesion,
-                    child: const Text(
-                      "Iniciar sesión",
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  BotonPersonalizado(
+                      texto: "Iniciar Sesión",
+                      icono: Icons.login,
+                      alPresionar: _validarYIniciarSesion,
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 28, 108, 178),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                      textStyle: const TextStyle(fontSize: 16),
-                    ),
-                    onPressed: () {
-                      // Navegar a la pantalla de registro
+                  BotonPersonalizado(
+                    texto: " Registrar cuenta",
+                    icono: Icons.app_registration,
+                    alPresionar: () {
                       Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => Registro()),
+                          context,
+                          MaterialPageRoute(builder: (context) => Registro()),
                       );
                     },
-                    child: const Text(
-                      "Registrar sesión",
-                      style: TextStyle(color: Colors.white),
-                    ),
                   ),
                 ],
               ),

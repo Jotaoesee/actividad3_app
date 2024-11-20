@@ -1,3 +1,4 @@
+import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -202,44 +203,12 @@ class _RegistroState extends State<Registro> {
               ),
               const SizedBox(height: 30),
 
-              GestureDetector(
-                onTapDown: (_) {
-                  setState(() {
-                    esPresionado = true;
-                  });
-                },
-                onTapUp: (_) {
-                  setState(() {
-                    esPresionado = false;
-                  });
-                  validarFormulario(contexto);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 100),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: esPresionado ? 25 : 20,
-                    vertical: esPresionado ? 12 : 15,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 28, 108, 178),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: esPresionado
-                        ? []
-                        : [
-                      const BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 8,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Text(
-                    "Registrarse",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
+              BotonPersonalizado(
+                  texto: "Registrarse",
+                  icono: Icons.person_add,
+                  alPresionar: () {
+                    validarFormulario(contexto);
+                  })
             ],
           ),
         ),

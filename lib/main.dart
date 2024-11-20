@@ -1,7 +1,7 @@
 import 'package:actividad3_app/pantallas/inicio.dart';
-import 'package:flutter/material.dart';
 import 'package:actividad3_app/pantallas/registro.dart';
-import 'package:actividad3_app/pantallas/pantalla_inicio.dart'; // Importa el SplashScreen
+import 'package:flutter/material.dart';
+import 'package:actividad3_app/pantallas/splash.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,9 +20,9 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/splash', // Ruta inicial ahora es la pantalla Splash
       routes: {
-        '/splash': (context) => const PantallaDeInicio(),
-       // '/': (context) => const Inicio(),
-       // '/registro': (context) => Registro(),
+        '/splash': (context) => const Splash(),
+        '/': (context) => const Inicio(),
+        '/registro': (context) => Registro(),
       },
     );
   }
