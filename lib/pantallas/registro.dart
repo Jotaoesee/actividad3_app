@@ -176,7 +176,6 @@ class _RegistroState extends State<Registro> {
                       size: 30,
                     ),
                     onPressed: () {
-                      // Acción para Facebook
                     },
                   ),
                   const SizedBox(width: 20),
@@ -187,7 +186,6 @@ class _RegistroState extends State<Registro> {
                       size: 30,
                     ),
                     onPressed: () {
-                      // Acción para Google
                     },
                   ),
                   const SizedBox(width: 20),
@@ -198,7 +196,6 @@ class _RegistroState extends State<Registro> {
                       size: 30,
                     ),
                     onPressed: () {
-                      // Acción para Twitter
                     },
                   ),
                 ],

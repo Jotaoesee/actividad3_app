@@ -1,38 +1,39 @@
+import 'package:actividad3_app/pantallas/registro.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'registro.dart';  // Importar la pantalla de registro
 
 class Inicio extends StatefulWidget {
-  const Inicio({super.key});
+  const Inicio({Key? key}) : super(key: key);
 
   @override
   _InicioState createState() => _InicioState();
 }
 
+
 class _InicioState extends State<Inicio> {
   // Controladores para los campos de texto
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController controladorDeEmail = TextEditingController();
+  final TextEditingController controladorDeContrasena = TextEditingController();
 
   // Función de validación
-  void _validateAndLogin() {
-    final email = emailController.text;
-    final password = passwordController.text;
+  void _validarYIniciarSesion() {
+    final email = controladorDeEmail.text;
+    final contrasena = controladorDeContrasena.text;
 
     // Validación del correo electrónico
     if (email.isEmpty || !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$').hasMatch(email)) {
-      _showError("Por favor ingrese un correo electrónico válido.");
+      _mostrarError("Por favor ingrese un correo electrónico válido.");
       return;
     }
 
     // Validación de la contraseña
-    if (password.isEmpty || password.length < 6) {
-      _showError("La contraseña debe tener al menos 6 caracteres.");
+    if (contrasena.isEmpty || contrasena.length < 6) {
+      _mostrarError("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
     // Si las validaciones pasan, puedes proceder con el inicio de sesión
-    _showSuccess("Iniciando sesión...");
+    _mostrarExito("Iniciando sesión...");
 
     // Simula un retraso en el inicio de sesión para mostrar el mensaje
     Future.delayed(const Duration(seconds: 2), () {
@@ -45,16 +46,16 @@ class _InicioState extends State<Inicio> {
   }
 
   // Mostrar mensaje de error
-  void _showError(String message) {
+  void _mostrarError(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text(mensaje)),
     );
   }
 
   // Mostrar mensaje de éxito
-  void _showSuccess(String message) {
+  void _mostrarExito(String mensaje) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.green),
+      SnackBar(content: Text(mensaje), backgroundColor: Colors.green),
     );
   }
 
@@ -92,7 +93,7 @@ class _InicioState extends State<Inicio> {
               ),
               const SizedBox(height: 20),
               TextField(
-                controller: emailController,
+                controller: controladorDeEmail,
                 decoration: const InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -110,7 +111,7 @@ class _InicioState extends State<Inicio> {
               ),
               const SizedBox(height: 26),
               TextField(
-                controller: passwordController,
+                controller: controladorDeContrasena,
                 obscureText: true,
                 decoration: const InputDecoration(
                   filled: true,
@@ -183,7 +184,7 @@ class _InicioState extends State<Inicio> {
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                       textStyle: const TextStyle(fontSize: 16),
                     ),
-                    onPressed: _validateAndLogin,
+                    onPressed: _validarYIniciarSesion,
                     child: const Text(
                       "Iniciar sesión",
                       style: TextStyle(color: Colors.white),
