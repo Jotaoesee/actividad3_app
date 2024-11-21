@@ -1,3 +1,4 @@
+import 'package:actividad3_app/pantallas/ajuste.dart';
 import 'package:actividad3_app/pantallas/home.dart';
 import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:actividad3_app/pantallas/registro.dart';
@@ -32,6 +33,9 @@ class MyApp extends StatelessWidget {
         '/inicio': (context) => const Inicio(),
         '/registro': (context) => Registro(),
         '/home': (context) => const Home(),
+        '/ajuste': (context) => const Ajuste()
+
+
 
       },
       debugShowCheckedModeBanner: false,

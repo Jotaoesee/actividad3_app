@@ -1,6 +1,8 @@
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
 
+import 'ajuste.dart';
+
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -16,7 +18,7 @@ class _HomeState extends State<Home> {
   final List<Widget> _pantallas = [
     const Center(child: Text('Pantalla de Inicio', style: TextStyle(fontSize: 24))),
     const Center(child: Text('Pantalla de Perfil', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Pantalla de Configuración', style: TextStyle(fontSize: 24))),
+    const Ajuste(),  // Aquí se coloca la pantalla de ajustes
   ];
 
   @override
@@ -61,19 +63,21 @@ class _HomeState extends State<Home> {
             leading: const Icon(Icons.home),
             title: const Text('Inicio'),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Cierra el Drawer
               setState(() {
                 _indiceSeleccionado = 0; // Cambiar a la pantalla de inicio
+                _pantallaActual = "Inicio"; // Cambiar el título
               });
             },
           ),
           ListTile(
             leading: const Icon(Icons.settings),
-            title: const Text('Configuración'),
+            title: const Text('Ajustes'),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Cierra el Drawer
               setState(() {
-                _indiceSeleccionado = 2; // Cambiar a la pantalla de configuración
+                _indiceSeleccionado = 2; // Cambiar a la pantalla de ajustes
+                _pantallaActual = "Ajustes"; // Cambiar el título
               });
             },
           ),
@@ -83,12 +87,11 @@ class _HomeState extends State<Home> {
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => Splash()),
+                MaterialPageRoute(builder: (context) =>  Splash()),
               );
               print("Cerrar sesión");
             },
           ),
-
         ],
       ),
     );
@@ -127,7 +130,7 @@ class _HomeState extends State<Home> {
               ? "Inicio"
               : _indiceSeleccionado == 1
               ? "Perfil"
-              : "Configuración"; // Cambiar el nombre de la pantalla en la AppBar
+              : "Ajustes"; // Cambiar el nombre de la pantalla en la AppBar
         });
       },
       items: const [
@@ -141,7 +144,7 @@ class _HomeState extends State<Home> {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.settings),
-          label: 'Configuración',
+          label: 'Ajustes',
         ),
       ],
     );
