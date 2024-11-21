@@ -9,14 +9,13 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String _currentScreen = "Inicio";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pantalla Home'),
-        backgroundColor: const Color.fromARGB(255, 28, 108, 178),
-      ),
-      drawer: _buildDrawer(), // Cargar el Drawer aquí
+      appBar: _buildAppBar(),
+      drawer: _buildDrawer(),
       body: const Center(
         child: Text('Contenido de la Pantalla Home'),
       ),
@@ -41,18 +40,40 @@ class _HomeState extends State<Home> {
             leading: const Icon(Icons.home),
             title: const Text('Inicio'),
             onTap: () {
-              Navigator.pop(context); // Cerrar el drawer
+              Navigator.pop(context);
             },
           ),
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Configuración'),
             onTap: () {
-              Navigator.pop(context); // Cerrar el drawer
+              Navigator.pop(context);
             },
           ),
         ],
       ),
+    );
+  }
+
+  // AppBar con el título que cambia según la pestaña seleccionada
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: Text("Pantalla de $_currentScreen"), // a futuro valdra para que ponga el nombre de la pantalla que estoy
+      backgroundColor: const Color.fromARGB(255, 28, 108, 178),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {
+            print("Buscar...");
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.notifications),
+          onPressed: () {
+            print("Notificaciones...");
+          },
+        ),
+      ],
     );
   }
 }

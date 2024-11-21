@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "447142741538",
+    "project_id": "actividad3flutter",
+    "storage_bucket": "actividad3flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:447142741538:android:29a8a7ca4ee0b47cc86c7b",
+        "android_client_info": {
+          "package_name": "org.eurekamps.actividad3_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJyP2qmfu_EPKhZxAMjG8_jVWaVPIdlB8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
