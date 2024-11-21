@@ -2,12 +2,12 @@ import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-class SplashScreen extends StatefulWidget {
+class Splash extends StatefulWidget {
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  _SplashState createState() => _SplashState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashState extends State<Splash> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 

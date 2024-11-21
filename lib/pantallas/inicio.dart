@@ -17,6 +17,9 @@ class _InicioState extends State<Inicio> {
   final TextEditingController controladorDeEmail = TextEditingController();
   final TextEditingController controladorDeContrasena = TextEditingController();
 
+  bool esContrasenaVisible = false;
+
+
   // Función de validación
   void _validarYIniciarSesion() {
     final email = controladorDeEmail.text;
@@ -155,18 +158,30 @@ class _InicioState extends State<Inicio> {
               const SizedBox(height: 26),
               TextField(
                 controller: controladorDeContrasena,
-                obscureText: true,
-                decoration: const InputDecoration(
+                obscureText: !esContrasenaVisible,
+                decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Contraseña',
-                  labelStyle: TextStyle(color: Colors.black87),
-                  prefixIcon: Icon(Icons.lock, color: Colors.grey),
-                  border: OutlineInputBorder(),
-                  enabledBorder: OutlineInputBorder(
+                  labelStyle: const TextStyle(color: Colors.black87),
+                  prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      esContrasenaVisible
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        esContrasenaVisible = !esContrasenaVisible;
+                      });
+                    },
+                  ),
+                  border: const OutlineInputBorder(),
+                  enabledBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey),
                   ),
-                  focusedBorder: OutlineInputBorder(
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.blue),
                   ),
                 ),
