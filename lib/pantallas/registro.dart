@@ -1,4 +1,5 @@
 import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -36,6 +37,30 @@ class _RegistroState extends State<Registro> {
     }
 
     mostrarMensaje(contexto, "Registro completado con exito.");
+  }
+
+  void registrarUsuario() async {
+
+    try {
+      final credential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+
+        email: controladorEmail.text,
+        password: controladorContrasena.text,
+
+      );
+
+    } on FirebaseAuthException catch (e) {
+
+      if(e.code == 'user-not-found'){
+        print('No user found for that email.');
+
+      } else if (e.code == 'wrong-password'){
+        print('Wrong password provided for that user.');
+
+      }
+
+    }
   }
 
   void mostrarMensaje(BuildContext contexto, String mensaje) {
@@ -162,9 +187,22 @@ class _RegistroState extends State<Registro> {
               const SizedBox(height: 30),
 
               // Sección de iconos de redes sociales con líneas
-              const Text(
-                "o con tus redes sociales",
-                style: TextStyle(color: Colors.white),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Colors.white, width: 2),
+                    ),
+                  ),
+                  child: const Text(
+                    "o con tus redes sociales",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               Row(
@@ -207,6 +245,7 @@ class _RegistroState extends State<Registro> {
                   texto: "Registrarse",
                   icono: Icons.person_add,
                   alPresionar: () {
+                    registrarUsuario();
                     validarFormulario(contexto);
                   })
             ],
