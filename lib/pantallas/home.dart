@@ -1,5 +1,5 @@
+import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -9,22 +9,35 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  String _pantallaActual = "Inicio";  // Variable para controlar la pantalla actual
-  int _indiceSeleccionado = 0;  // Índice para controlar la pestaña seleccionada
+  String _pantallaActual = "Inicio"; // Variable para controlar la pantalla actual
+  int _indiceSeleccionado = 0; // Índice para controlar la pestaña seleccionada
 
   // Lista de widgets que representarán las diferentes pantallas
   final List<Widget> _pantallas = [
-    const Center(child: Text('Pantalla Inicio')),
-    const Center(child: Text('Pantalla Perfil')),
-    const Center(child: Text('Pantalla Configuración')),
+    const Center(child: Text('Pantalla de Inicio', style: TextStyle(fontSize: 24))),
+    const Center(child: Text('Pantalla de Perfil', style: TextStyle(fontSize: 24))),
+    const Center(child: Text('Pantalla de Configuración', style: TextStyle(fontSize: 24))),
   ];
 
   @override
-  Widget build(BuildContext contexto) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: _crearAppBar(),
       drawer: _crearDrawer(),
-      body: _pantallas[_indiceSeleccionado],  // Cambia el cuerpo según la pestaña seleccionada
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF0D47A1),
+              Color(0xFF1F77D3),
+              Color(0xFF4AA3F3),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: _pantallas[_indiceSeleccionado], // Cambia el cuerpo según la pestaña seleccionada
+      ),
       bottomNavigationBar: _crearBarraNavegacionInferior(),
     );
   }
@@ -42,6 +55,7 @@ class _HomeState extends State<Home> {
               backgroundColor: Colors.white,
               child: Icon(Icons.person, color: Colors.blue),
             ),
+            onDetailsPressed: null, // Acción cuando se haga clic en el avatar (sin implementación ahora)
           ),
           ListTile(
             leading: const Icon(Icons.home),
@@ -49,7 +63,7 @@ class _HomeState extends State<Home> {
             onTap: () {
               Navigator.pop(context);
               setState(() {
-                _indiceSeleccionado = 0;  // Cambiar a la pantalla de inicio
+                _indiceSeleccionado = 0; // Cambiar a la pantalla de inicio
               });
             },
           ),
@@ -59,10 +73,22 @@ class _HomeState extends State<Home> {
             onTap: () {
               Navigator.pop(context);
               setState(() {
-                _indiceSeleccionado = 2;  // Cambiar a la pantalla de configuración
+                _indiceSeleccionado = 2; // Cambiar a la pantalla de configuración
               });
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Cerrar sesión'),
+            onTap: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Splash()),
+              );
+              print("Cerrar sesión");
+            },
+          ),
+
         ],
       ),
     );
@@ -71,7 +97,7 @@ class _HomeState extends State<Home> {
   // AppBar con el título que cambia según la pestaña seleccionada
   AppBar _crearAppBar() {
     return AppBar(
-      title: Text("Pantalla de $_pantallaActual"),  // Actualizar el título de acuerdo a la pantalla seleccionada
+      title: Text("Pantalla de $_pantallaActual"), // Actualizar el título de acuerdo a la pantalla seleccionada
       backgroundColor: const Color.fromARGB(255, 28, 108, 178),
       actions: [
         IconButton(
@@ -96,12 +122,12 @@ class _HomeState extends State<Home> {
       currentIndex: _indiceSeleccionado,
       onTap: (int indice) {
         setState(() {
-          _indiceSeleccionado = indice;  // Cambiar el índice de la pestaña seleccionada
+          _indiceSeleccionado = indice; // Cambiar el índice de la pestaña seleccionada
           _pantallaActual = _indiceSeleccionado == 0
               ? "Inicio"
               : _indiceSeleccionado == 1
               ? "Perfil"
-              : "Configuración";  // Cambiar el nombre de la pantalla en la AppBar
+              : "Configuración"; // Cambiar el nombre de la pantalla en la AppBar
         });
       },
       items: const [

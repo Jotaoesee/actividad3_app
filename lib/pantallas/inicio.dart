@@ -1,3 +1,4 @@
+import 'package:actividad3_app/pantallas/home.dart';
 import 'package:actividad3_app/pantallas/registro.dart';
 import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,7 +46,7 @@ class _InicioState extends State<Inicio> {
       // Aquí se puede navegar a una nueva pantalla si el inicio de sesión es exitoso
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Registro()),
+        MaterialPageRoute(builder: (context) => const Home()),
       );
     });
   }
@@ -86,7 +87,7 @@ class _InicioState extends State<Inicio> {
       // Redirigir a otra pantalla (puedes ajustar esto según tu lógica)
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Registro()),
+        MaterialPageRoute(builder: (context) => const Home()),
       );
     } on FirebaseAuthException catch (e) {
       // Manejar errores específicos de Firebase
