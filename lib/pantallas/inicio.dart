@@ -61,6 +61,46 @@ class _InicioState extends State<Inicio> {
     );
   }
 
+  void iniciarSesion() async {
+    final email = controladorDeEmail.text.trim();
+    final contrasena = controladorDeContrasena.text.trim();
+
+    if (email.isEmpty || contrasena.isEmpty) {
+      _mostrarError("Por favor ingresa tu correo y contraseña.");
+      return;
+    }
+
+    try {
+      // Intentar iniciar sesión
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: contrasena,
+      );
+
+      // Mostrar mensaje de éxito
+      _mostrarExito("Inicio de sesión exitoso. Bienvenido, ${credential.user?.email}.");
+      print("Inicio de sesión exitoso. Bienvenido");
+      // Redirigir a otra pantalla (puedes ajustar esto según tu lógica)
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Registro()),
+      );
+    } on FirebaseAuthException catch (e) {
+      // Manejar errores específicos de Firebase
+      if (e.code == 'user-not-found') {
+        _mostrarError("No se encontró un usuario con ese correo.");
+      } else if (e.code == 'wrong-password') {
+        _mostrarError("Contraseña incorrecta.");
+      } else {
+        _mostrarError("Error: ${e.message}");
+      }
+    } catch (e) {
+      // Manejar otros errores
+      _mostrarError("Ocurrió un error inesperado.");
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -197,7 +237,11 @@ class _InicioState extends State<Inicio> {
                   BotonPersonalizado(
                       texto: "Iniciar Sesión",
                       icono: Icons.login,
-                      alPresionar: _validarYIniciarSesion,
+                      alPresionar: () {
+                        iniciarSesion();
+                        _validarYIniciarSesion;
+                      }
+
                   ),
                   BotonPersonalizado(
                     texto: " Registrar cuenta",

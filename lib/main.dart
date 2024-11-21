@@ -1,3 +1,4 @@
+import 'package:actividad3_app/pantallas/home.dart';
 import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:actividad3_app/pantallas/registro.dart';
 import 'package:flutter/material.dart';
@@ -27,10 +28,11 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/splash', // Ruta inicial ahora es la pantalla Splash
       routes: {
-        '/splash': (context) =>  SplashScreen(),
+        '/splash': (context) =>  Home(),
         '/': (context) => const Inicio(),
         '/registro': (context) => Registro(),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }
