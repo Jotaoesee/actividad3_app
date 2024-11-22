@@ -18,7 +18,7 @@ class _HomeState extends State<Home> {
   final List<Widget> _pantallas = [
     const Center(child: Text('Pantalla de Inicio', style: TextStyle(fontSize: 24))),
     const Center(child: Text('Pantalla de Perfil', style: TextStyle(fontSize: 24))),
-    const Ajuste(),  // Aquí se coloca la pantalla de ajustes
+    const Ajuste(),
   ];
 
   @override
