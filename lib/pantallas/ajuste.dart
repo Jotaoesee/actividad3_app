@@ -86,6 +86,7 @@ class _AjusteState extends State<Ajuste> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                // Modo oscuro
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -101,6 +102,7 @@ class _AjusteState extends State<Ajuste> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                // Tamaño del texto
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -135,6 +137,7 @@ class _AjusteState extends State<Ajuste> {
                   ),
                 ),
                 const SizedBox(height: 40),
+                // Esquema de color
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -171,6 +174,7 @@ class _AjusteState extends State<Ajuste> {
                   ),
                 ),
                 const SizedBox(height: 40),
+                // Botones de acción
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

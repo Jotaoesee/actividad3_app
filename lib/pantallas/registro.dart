@@ -40,26 +40,18 @@ class _RegistroState extends State<Registro> {
   }
 
   void registrarUsuario() async {
-
     try {
       final credential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
-
         email: controladorEmail.text,
         password: controladorContrasena.text,
-
       );
-
     } on FirebaseAuthException catch (e) {
-
       if(e.code == 'user-not-found'){
         print('No user found for that email.');
-
       } else if (e.code == 'wrong-password'){
         print('Wrong password provided for that user.');
-
       }
-
     }
   }
 
@@ -77,15 +69,15 @@ class _RegistroState extends State<Registro> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Registro"),
-        backgroundColor: const Color.fromARGB(255, 28, 108, 178),
+        backgroundColor: const Color(0xFF0D47A1), // Azul más oscuro, como en Ajuste
       ),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0D47A1),
-              Color(0xFF1F77D3),
-              Color(0xFF4AA3F3),
+              Color(0xFF0D47A1), // Azul oscuro
+              Color(0xFF1F77D3), // Azul medio
+              Color(0xFF4AA3F3), // Azul claro
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -105,24 +97,26 @@ class _RegistroState extends State<Registro> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Campo de correo electrónico
               TextField(
                 controller: controladorEmail,
                 decoration: const InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Correo electronico',
-                  labelStyle: TextStyle(color: Colors.black87),
+                  labelStyle: TextStyle(color: Color(0xFF0288D1)), // Azul claro
                   prefixIcon: Icon(Icons.email, color: Colors.grey),
                   border: OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue),
+                    borderSide: BorderSide(color: Color(0xFF0288D1)), // Azul claro
                   ),
                 ),
               ),
               const SizedBox(height: 20),
+              // Campo de contraseña
               TextField(
                 controller: controladorContrasena,
                 obscureText: !esContrasenaVisible,
@@ -130,7 +124,7 @@ class _RegistroState extends State<Registro> {
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Contraseña',
-                  labelStyle: const TextStyle(color: Colors.black87),
+                  labelStyle: const TextStyle(color: Color(0xFF0288D1)),
                   prefixIcon: const Icon(Icons.lock, color: Colors.grey),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -149,11 +143,12 @@ class _RegistroState extends State<Registro> {
                     borderSide: BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue),
+                    borderSide: BorderSide(color: Color(0xFF0288D1)), // Azul claro
                   ),
                 ),
               ),
               const SizedBox(height: 20),
+              // Campo de confirmar contraseña
               TextField(
                 controller: controladorConfirmarContrasena,
                 obscureText: !esContrasenaVisible,
@@ -161,7 +156,7 @@ class _RegistroState extends State<Registro> {
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Confirmar Contraseña',
-                  labelStyle: const TextStyle(color: Colors.black87),
+                  labelStyle: const TextStyle(color: Color(0xFF0288D1)),
                   prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -180,7 +175,7 @@ class _RegistroState extends State<Registro> {
                     borderSide: BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blue),
+                    borderSide: BorderSide(color: Color(0xFF0288D1)), // Azul claro
                   ),
                 ),
               ),
@@ -205,6 +200,7 @@ class _RegistroState extends State<Registro> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Iconos de redes sociales
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -214,8 +210,7 @@ class _RegistroState extends State<Registro> {
                       color: Colors.white,
                       size: 30,
                     ),
-                    onPressed: () {
-                    },
+                    onPressed: () {},
                   ),
                   const SizedBox(width: 20),
                   IconButton(
@@ -224,8 +219,7 @@ class _RegistroState extends State<Registro> {
                       color: Colors.white,
                       size: 30,
                     ),
-                    onPressed: () {
-                    },
+                    onPressed: () {},
                   ),
                   const SizedBox(width: 20),
                   IconButton(
@@ -234,13 +228,13 @@ class _RegistroState extends State<Registro> {
                       color: Colors.white,
                       size: 30,
                     ),
-                    onPressed: () {
-                    },
+                    onPressed: () {},
                   ),
                 ],
               ),
               const SizedBox(height: 30),
 
+              // Botón de registrarse
               BotonPersonalizado(
                   texto: "Registrarse",
                   icono: Icons.person_add,

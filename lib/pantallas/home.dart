@@ -1,6 +1,5 @@
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
-
 import 'ajuste.dart';
 
 class Home extends StatefulWidget {
@@ -17,7 +16,7 @@ class _HomeState extends State<Home> {
   // Lista de widgets que representarán las diferentes pantallas
   final List<Widget> _pantallas = [
     const Center(child: Text('Pantalla de Inicio', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Pantalla de Perfil', style: TextStyle(fontSize: 24))),
+    const Center(child: Text('Pantalla de Perfil (en construcción)', style: TextStyle(fontSize: 24))),
     const Ajuste(),
   ];
 
