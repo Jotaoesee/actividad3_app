@@ -1,3 +1,4 @@
+import 'package:actividad3_app/pantallas/perfil_usuario.dart';
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
 import 'ajuste.dart';
@@ -10,13 +11,12 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  String _pantallaActual = "Inicio"; // Variable para controlar la pantalla actual
   int _indiceSeleccionado = 0; // Índice para controlar la pestaña seleccionada
 
   // Lista de widgets que representarán las diferentes pantallas
   final List<Widget> _pantallas = [
     const Center(child: Text('Pantalla de Inicio', style: TextStyle(fontSize: 24))),
-    const Center(child: Text('Pantalla de Perfil (en construcción)', style: TextStyle(fontSize: 24))),
+    const PerfilUsuario(),
     const Ajuste(),
   ];
 
@@ -65,7 +65,6 @@ class _HomeState extends State<Home> {
               Navigator.pop(context); // Cierra el Drawer
               setState(() {
                 _indiceSeleccionado = 0; // Cambiar a la pantalla de inicio
-                _pantallaActual = "Inicio"; // Cambiar el título
               });
             },
           ),
@@ -76,8 +75,19 @@ class _HomeState extends State<Home> {
               Navigator.pop(context); // Cierra el Drawer
               setState(() {
                 _indiceSeleccionado = 2; // Cambiar a la pantalla de ajustes
-                _pantallaActual = "Ajustes"; // Cambiar el título
               });
+            },
+          ),
+          // Nueva opción para ir al perfil
+          ListTile(
+            leading: const Icon(Icons.account_circle),
+            title: const Text('Perfil'),
+            onTap: () {
+              Navigator.pop(context); // Cierra el Drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PerfilUsuario()), // Navegar a la pantalla de perfil
+              );
             },
           ),
           ListTile(
@@ -86,7 +96,7 @@ class _HomeState extends State<Home> {
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) =>  Splash()),
+                MaterialPageRoute(builder: (context) => Splash()), // Ajusta la navegación de tu app
               );
               print("Cerrar sesión");
             },
@@ -94,12 +104,12 @@ class _HomeState extends State<Home> {
         ],
       ),
     );
+
   }
 
   // AppBar con el título que cambia según la pestaña seleccionada
   AppBar _crearAppBar() {
     return AppBar(
-      title: Text("Pantalla de $_pantallaActual"), // Actualizar el título de acuerdo a la pantalla seleccionada
       backgroundColor: const Color.fromARGB(255, 28, 108, 178),
       actions: [
         IconButton(
@@ -124,12 +134,7 @@ class _HomeState extends State<Home> {
       currentIndex: _indiceSeleccionado,
       onTap: (int indice) {
         setState(() {
-          _indiceSeleccionado = indice; // Cambiar el índice de la pestaña seleccionada
-          _pantallaActual = _indiceSeleccionado == 0
-              ? "Inicio"
-              : _indiceSeleccionado == 1
-              ? "Perfil"
-              : "Ajustes"; // Cambiar el nombre de la pantalla en la AppBar
+          _indiceSeleccionado = indice;
         });
       },
       items: const [
