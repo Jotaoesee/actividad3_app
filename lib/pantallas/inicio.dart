@@ -19,23 +19,26 @@ class _InicioState extends State<Inicio> {
   bool esContrasenaVisible = false;
   bool _isLoading = false; // Indicador de carga para inicio de sesión
 
+  // Expresión regular para validar el email
+  final RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
+
+  // Función de validación y autenticación
   void _validarYIniciarSesion() async {
     final email = controladorDeEmail.text.trim();
     final contrasena = controladorDeContrasena.text.trim();
 
-    if (email.isEmpty || !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$').hasMatch(email)) {
-      _mostrarError("Por favor ingrese un correo electrónico válido.");
+    if (email.isEmpty || !emailRegExp.hasMatch(email)) {
+      _mostrarMensaje("Por favor ingrese un correo electrónico válido.");
       return;
     }
 
     if (contrasena.isEmpty || contrasena.length < 6) {
-      _mostrarError("La contraseña debe tener al menos 6 caracteres.");
+      _mostrarMensaje("La contraseña debe tener al menos 6 caracteres.");
       return;
     }
 
-    // Iniciar sesión
     setState(() {
-      _isLoading = true; // Mostrar indicador de carga
+      _isLoading = true;
     });
 
     try {
@@ -43,39 +46,58 @@ class _InicioState extends State<Inicio> {
         email: email,
         password: contrasena,
       );
-
-      _mostrarExito("Inicio de sesión exitoso. Bienvenido, ${credential.user?.email}.");
-
+      _mostrarMensaje("Inicio de sesión exitoso. Bienvenido, ${credential.user?.email}.", isSuccess: true);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const Home()),
       );
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        _mostrarError("No se encontró un usuario con ese correo.");
-      } else if (e.code == 'wrong-password') {
-        _mostrarError("Contraseña incorrecta.");
-      } else {
-        _mostrarError("Error: ${e.message}");
-      }
+      _mostrarMensaje("Error: ${e.message}");
     } catch (e) {
-      _mostrarError("Ocurrió un error inesperado.");
+      _mostrarMensaje("Ocurrió un error inesperado.");
     } finally {
       setState(() {
-        _isLoading = false; // Ocultar el indicador de carga
+        _isLoading = false;
       });
     }
   }
 
-  void _mostrarError(String mensaje) {
+  // Mostrar mensajes de error o éxito
+  void _mostrarMensaje(String mensaje, {bool isSuccess = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje)),
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: isSuccess ? Colors.green : Colors.red,
+      ),
     );
   }
 
-  void _mostrarExito(String mensaje) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(mensaje), backgroundColor: Colors.green),
+  // Widget para los campos de texto
+  Widget _campoDeTexto({
+    required TextEditingController controlador,
+    required String labelText,
+    required IconData icono,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
+    return TextField(
+      controller: controlador,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        labelText: labelText,
+        labelStyle: const TextStyle(color: Colors.black87),
+        prefixIcon: Icon(icono, color: Colors.grey),
+        suffixIcon: suffixIcon,
+        border: const OutlineInputBorder(),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blue),
+        ),
+      ),
     );
   }
 
@@ -114,52 +136,28 @@ class _InicioState extends State<Inicio> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  TextField(
-                    controller: controladorDeEmail,
-                    decoration: const InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      labelText: 'Correo electrónico',
-                      labelStyle: TextStyle(color: Colors.black87),
-                      prefixIcon: Icon(Icons.email, color: Colors.grey),
-                      border: OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                    ),
+                  _campoDeTexto(
+                    controlador: controladorDeEmail,
+                    labelText: 'Correo electrónico',
+                    icono: Icons.email,
                   ),
                   const SizedBox(height: 26),
-                  TextField(
-                    controller: controladorDeContrasena,
+                  _campoDeTexto(
+                    controlador: controladorDeContrasena,
+                    labelText: 'Contraseña',
+                    icono: Icons.lock,
                     obscureText: !esContrasenaVisible,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      labelText: 'Contraseña',
-                      labelStyle: const TextStyle(color: Colors.black87),
-                      prefixIcon: const Icon(Icons.lock, color: Colors.grey),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          esContrasenaVisible
-                              ? Icons.visibility_off
-                              : Icons.visibility,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            esContrasenaVisible = !esContrasenaVisible;
-                          });
-                        },
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        esContrasenaVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
-                      border: const OutlineInputBorder(),
-                      enabledBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey),
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
+                      onPressed: () {
+                        setState(() {
+                          esContrasenaVisible = !esContrasenaVisible;
+                        });
+                      },
                     ),
                   ),
                   const SizedBox(height: 30),
@@ -225,7 +223,7 @@ class _InicioState extends State<Inicio> {
                       BotonPersonalizado(
                         texto: "Iniciar Sesión",
                         icono: Icons.login,
-                        alPresionar: _validarYIniciarSesion, // Llamar directamente a la función
+                        alPresionar: _validarYIniciarSesion,
                       ),
                       BotonPersonalizado(
                         texto: "Registrar cuenta",
@@ -248,10 +246,10 @@ class _InicioState extends State<Inicio> {
             const Positioned(
               left: 0,
               right: 0,
-              bottom: 120,
+              bottom: 0,
               child: Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white), // Color blanco
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
             ),

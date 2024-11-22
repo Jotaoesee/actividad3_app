@@ -38,6 +38,9 @@ class _AjusteState extends State<Ajuste> {
       _tamanoTexto = 16.0;
       _esquemaColor = 'Azul';
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Ajustes restablecidos')),
+    );
   }
 
   void _guardarAjustes() {

@@ -94,17 +94,17 @@ class _HomeState extends State<Home> {
             leading: const Icon(Icons.logout),
             title: const Text('Cerrar sesión'),
             onTap: () {
+              // Aquí puedes añadir tu lógica de cierre de sesión
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => Splash()), // Ajusta la navegación de tu app
               );
-              print("Cerrar sesión");
+              print("Cerrar sesión"); // Aquí podrías llamar a FirebaseAuth o el sistema de autenticación que estés utilizando
             },
           ),
         ],
       ),
     );
-
   }
 
   // AppBar con el título que cambia según la pestaña seleccionada

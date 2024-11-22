@@ -16,45 +16,52 @@ class _RegistroState extends State<Registro> {
   bool esPresionado = false;
   bool esContrasenaVisible = false;
 
+  // Validar los campos del formulario antes de registrar
   void validarFormulario(BuildContext contexto) {
     String email = controladorEmail.text.trim();
     String contrasena = controladorContrasena.text.trim();
     String confirmarContrasena = controladorConfirmarContrasena.text.trim();
 
+    // Verificar que los campos no estén vacíos
     if (email.isEmpty || contrasena.isEmpty || confirmarContrasena.isEmpty) {
       mostrarMensaje(contexto, "Por favor, completa todos los campos.");
       return;
     }
 
+    // Verificar que el correo sea válido
     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(email)) {
       mostrarMensaje(contexto, "Por favor, ingresa un correo valido.");
       return;
     }
 
+    // Verificar que las contraseñas coincidan
     if (contrasena != confirmarContrasena) {
       mostrarMensaje(contexto, "Las contraseñas no coinciden.");
       return;
     }
 
-    mostrarMensaje(contexto, "Registro completado con exito.");
+    // Si todo es correcto, intentar registrar al usuario
+    registrarUsuario();
   }
 
+  // Registrar al usuario con Firebase
   void registrarUsuario() async {
     try {
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: controladorEmail.text,
         password: controladorContrasena.text,
       );
+      mostrarMensaje(context, "Registro completado con éxito.");
     } on FirebaseAuthException catch (e) {
-      if(e.code == 'user-not-found'){
-        print('No user found for that email.');
-      } else if (e.code == 'wrong-password'){
-        print('Wrong password provided for that user.');
+      if (e.code == 'email-already-in-use') {
+        mostrarMensaje(context, "Este correo ya está en uso.");
+      } else {
+        mostrarMensaje(context, "Error: ${e.message}");
       }
     }
   }
 
+  // Mostrar mensajes en pantalla
   void mostrarMensaje(BuildContext contexto, String mensaje) {
     ScaffoldMessenger.of(contexto).showSnackBar(
       SnackBar(
@@ -69,7 +76,7 @@ class _RegistroState extends State<Registro> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Registro"),
-        backgroundColor: const Color(0xFF0D47A1), // Azul más oscuro, como en Ajuste
+        backgroundColor: const Color(0xFF0D47A1), // Azul más oscuro
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -104,14 +111,14 @@ class _RegistroState extends State<Registro> {
                   filled: true,
                   fillColor: Colors.white,
                   labelText: 'Correo electronico',
-                  labelStyle: TextStyle(color: Color(0xFF0288D1)), // Azul claro
+                  labelStyle: TextStyle(color: Color(0xFF0288D1)),
                   prefixIcon: Icon(Icons.email, color: Colors.grey),
                   border: OutlineInputBorder(),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF0288D1)), // Azul claro
+                    borderSide: BorderSide(color: Color(0xFF0288D1)),
                   ),
                 ),
               ),
@@ -143,7 +150,7 @@ class _RegistroState extends State<Registro> {
                     borderSide: BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF0288D1)), // Azul claro
+                    borderSide: BorderSide(color: Color(0xFF0288D1)),
                   ),
                 ),
               ),
@@ -175,7 +182,7 @@ class _RegistroState extends State<Registro> {
                     borderSide: BorderSide(color: Colors.grey),
                   ),
                   focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF0288D1)), // Azul claro
+                    borderSide: BorderSide(color: Color(0xFF0288D1)),
                   ),
                 ),
               ),
@@ -236,12 +243,13 @@ class _RegistroState extends State<Registro> {
 
               // Botón de registrarse
               BotonPersonalizado(
-                  texto: "Registrarse",
-                  icono: Icons.person_add,
-                  alPresionar: () {
-                    registrarUsuario();
-                    validarFormulario(contexto);
-                  })
+                texto: "Registrarse",
+                icono: Icons.person_add,
+                alPresionar: () {
+                  // Validar antes de registrar
+                  validarFormulario(contexto);
+                },
+              ),
             ],
           ),
         ),
