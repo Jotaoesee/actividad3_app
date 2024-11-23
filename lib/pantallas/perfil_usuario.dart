@@ -1,6 +1,9 @@
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_picker_web/image_picker_web.dart';
@@ -36,28 +39,75 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
   };
 
-  Future<void> guardarDatosEnFirestore() async {
+  Future<void> _guardarImagenEnFirebase() async {
     try {
-      // Accede a la instancia de Firestore
-      final firestore = FirebaseFirestore.instance;
+      // Inicializar Firebase
+      await Firebase.initializeApp();
 
-      // Crea un documento en la colección 'usuarios'
-      await firestore.collection('usuarios').doc('usuario_id').set({
-        'nombre': _nombre,
-        'apellido': _apellido,
-        'telefono': _telefono,
-        'ciudad': _ciudad,
-        'fechaNacimiento': _fechaNacimiento,
+      // Obtener el uid del usuario autenticado
+      User? usuario = FirebaseAuth.instance.currentUser;
+      if (usuario == null) {
+        print("Usuario no autenticado.");
+        return;
+      }
+      String uid = usuario.uid;
+
+      // Verificar si estamos en Web o móvil
+      File? imagenFile;
+
+      if (kIsWeb) {
+        // Usar ImagePickerWeb para seleccionar imagen en Web
+        final pickedBytes = await ImagePickerWeb.getImageAsBytes();
+        if (pickedBytes != null) {
+          imagenFile = File.fromRawPath(pickedBytes); // Convertir a File
+        }
+      } else {
+        // Usar ImagePicker para seleccionar imagen en móvil
+        final ImagePicker picker = ImagePicker();
+        final XFile? imagenSeleccionada = await picker.pickImage(source: ImageSource.gallery);
+        if (imagenSeleccionada != null) {
+          imagenFile = File(imagenSeleccionada.path);
+        }
+      }
+
+      if (imagenFile == null) {
+        print("No se seleccionó ninguna imagen.");
+        return;
+      }
+
+      // Crear una referencia al almacenamiento en Firebase con el uid del usuario
+      final Reference storageRef = FirebaseStorage.instance.ref().child('imagenes/$uid.jpg');
+
+      // Subir la imagen a Firebase Storage
+      final UploadTask uploadTask = storageRef.putFile(imagenFile);
+
+      // Esperar a que la carga termine
+      final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+
+      // Obtener la URL de descarga de la imagen subida
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      print("Imagen subida con éxito. URL de descarga: $downloadUrl");
+
+      // Guardar la URL de la imagen en Firestore
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).update({
+        'imagenPerfil': downloadUrl, // Guarda la URL de la imagen
       });
 
-      // Muestra un mensaje de éxito
+      // Actualizar la imagen localmente
+      setState(() {
+        _imagenPerfil = imagenFile;
+      });
+
+      // Mostrar un mensaje de éxito
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Datos guardados exitosamente")),
+        const SnackBar(content: Text("Imagen de perfil actualizada exitosamente")),
       );
+
     } catch (e) {
-      // Maneja errores y muestra un mensaje
+      print("Error al subir la imagen: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error al guardar datos: $e")),
+        SnackBar(content: Text("Error al subir la imagen: $e")),
       );
     }
   }
@@ -99,8 +149,12 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                     radius: 70,
                     backgroundImage: _imagenPerfil == null
                         ? const NetworkImage('https://via.placeholder.com/150')
-                        : FileImage(_imagenPerfil!) as ImageProvider,
+                        : (kIsWeb
+                        ? FileImage(_imagenPerfil!) as ImageProvider
+                        : Image.file(_imagenPerfil!) as ImageProvider),
                   ),
+
+
                   IconButton(
                     icon: const Icon(Icons.camera_alt),
                     onPressed: () {
@@ -225,7 +279,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             TextButton(
               onPressed: () {
                 onGuardar(); // Guardar el cambio local
-                guardarDatosEnFirestore(); // Guardar en Firestore
+                _guardarImagenEnFirebase(); // Guardar en Firestore
                 Navigator.pop(context); // Cerrar el diálogo
               },
               child: const Text("Guardar"),
@@ -252,7 +306,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                 title: const Text("Seleccionar de la galería"),
                 onTap: () {
                   Navigator.pop(context);
-                  _seleccionarImagen(); // Llamar a seleccionar imagen
+                  _seleccionarImagen(); // Solo selecciona la imagen
                 },
               ),
               ListTile(
@@ -260,7 +314,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                 title: const Text("Tomar foto"),
                 onTap: () {
                   Navigator.pop(context);
-                  _tomarFoto(); // Llamar a tomar foto
+                  _tomarFoto(); // Solo toma la foto
                 },
               ),
             ],
@@ -273,44 +327,54 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
   // Método para seleccionar imagen de la galería
   Future<void> _seleccionarImagen() async {
     if (kIsWeb) {
-      // Para web, usar ImagePickerWeb para seleccionar imagen de la galería
-      final pickedFile = await ImagePickerWeb.getImageAsFile();
-      if (pickedFile != null) {
-        setState(() {
-          _imagenPerfil = pickedFile as File?; // Asigna la imagen seleccionada
-        });
+      // Para Web, usa ImagePickerWeb para seleccionar imagen
+      try {
+        final pickedBytes = await ImagePickerWeb.getImageAsBytes();
+        if (pickedBytes != null) {
+          setState(() {
+            _imagenPerfil = File.fromRawPath(pickedBytes);
+          });
+        } else {
+          print("No se seleccionó ninguna imagen.");
+        }
+      } catch (e) {
+        print("Error al seleccionar la imagen: $e");
       }
     } else {
-      // Para móvil, usar ImagePicker para seleccionar imagen de la galería
+      // Para móvil
       final ImagePicker _picker = ImagePicker();
       final XFile? imagen = await _picker.pickImage(source: ImageSource.gallery);
       if (imagen != null) {
         setState(() {
-          _imagenPerfil = File(imagen.path); // Asigna la imagen seleccionada
+          _imagenPerfil = File(imagen.path);
         });
       }
     }
+    _guardarImagenEnFirebase();
   }
 
-  // Método para tomar foto con la cámara
+
+// Método para tomar foto con la cámara
   Future<void> _tomarFoto() async {
     if (kIsWeb) {
-      // Para web, usar ImagePickerWeb para tomar foto
-      final pickedFile = await ImagePickerWeb.getImageAsFile();
-      if (pickedFile != null) {
+      // Para Web, usa ImagePickerWeb para tomar foto
+      final pickedBytes = await ImagePickerWeb.getImageAsBytes();
+      if (pickedBytes != null) {
         setState(() {
-          _imagenPerfil = pickedFile as File?; // Asigna la foto tomada
+          _imagenPerfil = File.fromRawPath(pickedBytes); // Asigna la foto tomada como File
         });
       }
     } else {
-      // Para móvil, usar ImagePicker para tomar foto
+      // Para móvil, usa ImagePicker para tomar foto
       final ImagePicker _picker = ImagePicker();
       final XFile? imagen = await _picker.pickImage(source: ImageSource.camera);
       if (imagen != null) {
         setState(() {
-          _imagenPerfil = File(imagen.path); // Asigna la foto tomada
+          _imagenPerfil = File(imagen.path); // Asigna la foto tomada como File
         });
       }
     }
+    _guardarImagenEnFirebase(); // Subir la imagen después de tomarla
   }
+
 }
