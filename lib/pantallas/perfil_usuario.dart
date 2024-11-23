@@ -1,5 +1,6 @@
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_picker_web/image_picker_web.dart';
@@ -34,6 +35,32 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     'Rojo': [Color(0xFFB71C1C), Color(0xFFE53935), Color(0xFFFFCDD2)],
     'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
   };
+
+  Future<void> guardarDatosEnFirestore() async {
+    try {
+      // Accede a la instancia de Firestore
+      final firestore = FirebaseFirestore.instance;
+
+      // Crea un documento en la colección 'usuarios'
+      await firestore.collection('usuarios').doc('usuario_id').set({
+        'nombre': _nombre,
+        'apellido': _apellido,
+        'telefono': _telefono,
+        'ciudad': _ciudad,
+        'fechaNacimiento': _fechaNacimiento,
+      });
+
+      // Muestra un mensaje de éxito
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Datos guardados exitosamente")),
+      );
+    } catch (e) {
+      // Maneja errores y muestra un mensaje
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error al guardar datos: $e")),
+      );
+    }
+  }
 
   String _esquemaColor = 'Azul';
 
@@ -197,7 +224,8 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             ),
             TextButton(
               onPressed: () {
-                onGuardar(); // Guardar el cambio
+                onGuardar(); // Guardar el cambio local
+                guardarDatosEnFirestore(); // Guardar en Firestore
                 Navigator.pop(context); // Cerrar el diálogo
               },
               child: const Text("Guardar"),
@@ -207,6 +235,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
       },
     );
   }
+
 
   // Método para mostrar las opciones de imagen
   void _mostrarOpcionesImagen() {
