@@ -1,6 +1,7 @@
 import 'package:actividad3_app/pantallas/perfil_usuario.dart';
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'ajuste.dart';
 
 class Home extends StatefulWidget {
@@ -49,14 +50,27 @@ class _HomeState extends State<Home> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          const UserAccountsDrawerHeader(
-            accountName: Text('Usuario'),
-            accountEmail: Text('usuario@ejemplo.com'),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: Colors.blue),
-            ),
-            onDetailsPressed: null, // Acción cuando se haga clic en el avatar (sin implementación ahora)
+          StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(), // Escucha los cambios en el estado de autenticación
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator()); // Muestra el loading mientras se obtiene el usuario
+              }
+
+              final usuario = snapshot.data;
+              final nombreUsuario = usuario?.displayName ?? 'Nombre de Usuario'; // Usamos un nombre predeterminado si es null
+              final correoUsuario = usuario?.email ?? 'usuario@ejemplo.com'; // Usamos un correo predeterminado si es null
+
+              return UserAccountsDrawerHeader(
+                accountName: Text(nombreUsuario),
+                accountEmail: Text(correoUsuario),
+                currentAccountPicture: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, color: Colors.blue),
+                ),
+                onDetailsPressed: null, // Acción cuando se hace clic en el avatar (sin implementación)
+              );
+            },
           ),
           ListTile(
             leading: const Icon(Icons.home),
@@ -94,12 +108,12 @@ class _HomeState extends State<Home> {
             leading: const Icon(Icons.logout),
             title: const Text('Cerrar sesión'),
             onTap: () {
-              // Aquí puedes añadir tu lógica de cierre de sesión
+              // Lógica para cerrar sesión
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => Splash()), // Ajusta la navegación de tu app
+                MaterialPageRoute(builder: (context) => Splash()), // Ajusta la navegación según tu app
               );
-              print("Cerrar sesión"); // Aquí podrías llamar a FirebaseAuth o el sistema de autenticación que estés utilizando
+              print("Cerrar sesión");
             },
           ),
         ],

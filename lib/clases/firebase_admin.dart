@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class FirebaseAdmin {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -29,6 +31,30 @@ class FirebaseAdmin {
     } catch (e) {
       print("Error al guardar usuario: $e");
       throw Exception("Error al guardar usuario");
+    }
+  }
+
+  Future<void> subirImagenPerfil(File imagen) async {
+    try {
+      User? usuario = _auth.currentUser;
+      if (usuario == null) {
+        throw Exception("Usuario no autenticado");
+      }
+
+      final String uid = usuario.uid;
+      final Reference storageRef = FirebaseStorage.instance.ref().child('imagenes/$uid.jpg');
+      UploadTask uploadTask = storageRef.putFile(imagen);
+
+      final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // Guarda la URL en Firestore
+      await guardarUsuario({'imagenPerfil': downloadUrl});
+
+      print("Imagen subida y URL guardada: $downloadUrl");
+    } catch (e) {
+      print("Error al subir la imagen: $e");
+      throw Exception("Error al subir la imagen");
     }
   }
 

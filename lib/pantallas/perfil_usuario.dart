@@ -1,14 +1,13 @@
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+
+import '../clases/firebase_admin.dart';
 
 class PerfilUsuario extends StatefulWidget {
   const PerfilUsuario({Key? key}) : super(key: key);
@@ -39,80 +38,68 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
   };
 
-  Future<void> _guardarImagenEnFirebase() async {
+  Future<void> _guardarDatosEnFirebase() async {
     try {
-      // Inicializar Firebase
-      await Firebase.initializeApp();
+      FirebaseAdmin firebaseAdmin = FirebaseAdmin();
 
-      // Obtener el uid del usuario autenticado
-      User? usuario = FirebaseAuth.instance.currentUser;
-      if (usuario == null) {
-        print("Usuario no autenticado.");
-        return;
-      }
-      String uid = usuario.uid;
+      // Actualiza el mapa con los datos del usuario, incluyendo el nombre
+      Map<String, dynamic> usuarioData = {
+        'nombre': _nombre,  // Aquí guardamos el valor de _nombre actualizado
+        'apellido': _apellido,
+        'telefono': _telefono,
+        'ciudad': _ciudad,
+        'fechaNacimiento': _fechaNacimiento,
+      };
 
-      // Verificar si estamos en Web o móvil
-      File? imagenFile;
+      // Guarda los datos en Firestore
+      await firebaseAdmin.guardarUsuario(usuarioData);
 
-      if (kIsWeb) {
-        // Usar ImagePickerWeb para seleccionar imagen en Web
-        final pickedBytes = await ImagePickerWeb.getImageAsBytes();
-        if (pickedBytes != null) {
-          imagenFile = File.fromRawPath(pickedBytes); // Convertir a File
-        }
-      } else {
-        // Usar ImagePicker para seleccionar imagen en móvil
-        final ImagePicker picker = ImagePicker();
-        final XFile? imagenSeleccionada = await picker.pickImage(source: ImageSource.gallery);
-        if (imagenSeleccionada != null) {
-          imagenFile = File(imagenSeleccionada.path);
-        }
-      }
-
-      if (imagenFile == null) {
-        print("No se seleccionó ninguna imagen.");
-        return;
-      }
-
-      // Crear una referencia al almacenamiento en Firebase con el uid del usuario
-      final Reference storageRef = FirebaseStorage.instance.ref().child('imagenes/$uid.jpg');
-
-      // Subir la imagen a Firebase Storage
-      final UploadTask uploadTask = storageRef.putFile(imagenFile);
-
-      // Esperar a que la carga termine
-      final TaskSnapshot snapshot = await uploadTask.whenComplete(() => null);
-
-      // Obtener la URL de descarga de la imagen subida
-      String downloadUrl = await snapshot.ref.getDownloadURL();
-
-      print("Imagen subida con éxito. URL de descarga: $downloadUrl");
-
-      // Guardar la URL de la imagen en Firestore
-      await FirebaseFirestore.instance.collection('usuarios').doc(uid).update({
-        'imagenPerfil': downloadUrl, // Guarda la URL de la imagen
-      });
-
-      // Actualizar la imagen localmente
-      setState(() {
-        _imagenPerfil = imagenFile;
-      });
-
-      // Mostrar un mensaje de éxito
+      // Muestra un mensaje de éxito
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Imagen de perfil actualizada exitosamente")),
+        const SnackBar(content: Text("Datos guardados exitosamente")),
       );
-
+      print("Datos guardados en Firebase: $usuarioData");
     } catch (e) {
-      print("Error al subir la imagen: $e");
+      print("Error al guardar datos en Firebase: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error al subir la imagen: $e")),
+        SnackBar(content: Text("Error al guardar datos: $e")),
+      );
+    }
+  }
+
+
+  Future<void> _subirImagenYGuardarUrl() async {
+    if (_imagenPerfil == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No se ha seleccionado ninguna imagen")),
+      );
+      return;
+    }
+
+    try {
+      FirebaseAdmin firebaseAdmin = FirebaseAdmin();
+      await firebaseAdmin.subirImagenPerfil(_imagenPerfil!);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Imagen subida exitosamente")),
+      );
+    } catch (e) {
+      print("Error al subir imagen: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error al subir imagen: $e")),
       );
     }
   }
 
   String _esquemaColor = 'Azul';
+  User? _usuario; // Para almacenar el usuario autenticado
+
+  @override
+  void initState() {
+    super.initState();
+    // Obtén el usuario autenticado
+    _usuario = FirebaseAuth.instance.currentUser;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -144,16 +131,15 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 20),
-                  // Foto de perfil
+                  // Método para mostrar la imagen de perfil, utilizando MemoryImage en Web
                   CircleAvatar(
                     radius: 70,
                     backgroundImage: _imagenPerfil == null
                         ? const NetworkImage('https://via.placeholder.com/150')
                         : (kIsWeb
-                        ? FileImage(_imagenPerfil!) as ImageProvider
-                        : Image.file(_imagenPerfil!) as ImageProvider),
+                        ? MemoryImage(_imagenPerfil!.readAsBytesSync())  // Utiliza MemoryImage para Web
+                        : FileImage(_imagenPerfil!) as ImageProvider),  // Utiliza FileImage para móvil
                   ),
-
 
                   IconButton(
                     icon: const Icon(Icons.camera_alt),
@@ -162,7 +148,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  // Nombre del usuario
+                  // Nombre del usuario y correo
                   Text(
                     _nombre,
                     style: const TextStyle(
@@ -172,9 +158,9 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    "usuario@correo.com",
-                    style: TextStyle(
+                  Text(
+                    _usuario?.email ?? "usuario@correo.com", // Correo si existe, sino un valor por defecto
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white,
                     ),
@@ -213,6 +199,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                     texto: "Cerrar sesión",
                     icono: Icons.logout,
                     alPresionar: () {
+                      FirebaseAuth.instance.signOut(); // Cierra sesión en Firebase
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => Splash())
@@ -224,11 +211,9 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             ),
           ),
         ),
-
       ),
     );
   }
-
 
   // Método para crear las cards de cada campo editable
   Widget _crearCard(String titulo, String campo, TextEditingController controlador, Function(String) onGuardar) {
@@ -242,8 +227,8 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         trailing: IconButton(
           icon: const Icon(Icons.edit),
           onPressed: () {
-            _mostrarDialogoEdicion(titulo, campo, controlador, () {
-              onGuardar(controlador.text);
+            _mostrarDialogoEdicion(titulo, campo, controlador, (nuevoValor) {
+              onGuardar(nuevoValor);  // Aquí pasamos el valor editado
             });
           },
         ),
@@ -251,13 +236,12 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     );
   }
 
-  // Método para mostrar el cuadro de diálogo de edición
+// Método para mostrar el cuadro de diálogo de edición
   void _mostrarDialogoEdicion(
       String titulo,
       String campo,
       TextEditingController controlador,
-      VoidCallback onGuardar) {
-
+      Function(String) onGuardar) {  // Asegúrate de que onGuardar reciba un String
     controlador.text = campo;
 
     showDialog(
@@ -269,20 +253,20 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
             controller: controlador,
             decoration: InputDecoration(hintText: "Ingrese $titulo"),
           ),
-          actions: [
+          actions: <Widget>[
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Cerrar el diálogo sin guardar
-              },
               child: const Text("Cancelar"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
             ),
             TextButton(
-              onPressed: () {
-                onGuardar(); // Guardar el cambio local
-                _guardarImagenEnFirebase(); // Guardar en Firestore
-                Navigator.pop(context); // Cerrar el diálogo
-              },
               child: const Text("Guardar"),
+              onPressed: () {
+                onGuardar(controlador.text);  // Pasa el valor de controlador.text como String
+                Navigator.pop(context);
+                _guardarDatosEnFirebase();
+              },
             ),
           ],
         );
@@ -291,13 +275,14 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
   }
 
 
-  // Método para mostrar las opciones de imagen
+
+  // Mostrar opciones de imagen (Galería o cámara)
   void _mostrarOpcionesImagen() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
-          title: const Text("Selecciona una opción"),
+          title: const Text("Seleccionar imagen"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -306,7 +291,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                 title: const Text("Seleccionar de la galería"),
                 onTap: () {
                   Navigator.pop(context);
-                  _seleccionarImagen(); // Solo selecciona la imagen
+                  _seleccionarImagen();
                 },
               ),
               ListTile(
@@ -314,7 +299,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                 title: const Text("Tomar foto"),
                 onTap: () {
                   Navigator.pop(context);
-                  _tomarFoto(); // Solo toma la foto
+                  _tomarFoto();
                 },
               ),
             ],
@@ -324,16 +309,17 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     );
   }
 
-  // Método para seleccionar imagen de la galería
+  // Método para seleccionar imagen de la galería (móvil y web)
   Future<void> _seleccionarImagen() async {
     if (kIsWeb) {
-      // Para Web, usa ImagePickerWeb para seleccionar imagen
+      // Web
       try {
         final pickedBytes = await ImagePickerWeb.getImageAsBytes();
         if (pickedBytes != null) {
           setState(() {
             _imagenPerfil = File.fromRawPath(pickedBytes);
           });
+          await _subirImagenYGuardarUrl(); // Subir la imagen después de seleccionarla
         } else {
           print("No se seleccionó ninguna imagen.");
         }
@@ -341,40 +327,42 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
         print("Error al seleccionar la imagen: $e");
       }
     } else {
-      // Para móvil
+      // Móvil
       final ImagePicker _picker = ImagePicker();
       final XFile? imagen = await _picker.pickImage(source: ImageSource.gallery);
       if (imagen != null) {
         setState(() {
           _imagenPerfil = File(imagen.path);
         });
+        await _subirImagenYGuardarUrl(); // Subir la imagen después de seleccionarla
       }
     }
-    _guardarImagenEnFirebase();
   }
 
 
-// Método para tomar foto con la cámara
+  // Método para tomar foto con la cámara
   Future<void> _tomarFoto() async {
     if (kIsWeb) {
-      // Para Web, usa ImagePickerWeb para tomar foto
-      final pickedBytes = await ImagePickerWeb.getImageAsBytes();
-      if (pickedBytes != null) {
-        setState(() {
-          _imagenPerfil = File.fromRawPath(pickedBytes); // Asigna la foto tomada como File
-        });
+      try {
+        final pickedBytes = await ImagePickerWeb.getImageAsBytes();
+        if (pickedBytes != null) {
+          setState(() {
+            _imagenPerfil = File.fromRawPath(pickedBytes);
+          });
+          await _subirImagenYGuardarUrl();
+        }
+      } catch (e) {
+        print("Error al tomar la foto: $e");
       }
     } else {
-      // Para móvil, usa ImagePicker para tomar foto
       final ImagePicker _picker = ImagePicker();
       final XFile? imagen = await _picker.pickImage(source: ImageSource.camera);
       if (imagen != null) {
         setState(() {
-          _imagenPerfil = File(imagen.path); // Asigna la foto tomada como File
+          _imagenPerfil = File(imagen.path);
         });
+        await _subirImagenYGuardarUrl();
       }
     }
-    _guardarImagenEnFirebase(); // Subir la imagen después de tomarla
   }
-
 }
