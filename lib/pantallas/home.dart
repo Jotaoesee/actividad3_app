@@ -1,3 +1,4 @@
+import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:actividad3_app/pantallas/perfil_usuario.dart';
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class _HomeState extends State<Home> {
 
   // Lista de widgets que representarán las diferentes pantallas
   final List<Widget> _pantallas = [
-    const Center(child: Text('Pantalla de Inicio', style: TextStyle(fontSize: 24))),
+    Inicio(),
     const PerfilUsuario(),
     const Ajuste(),
   ];
@@ -51,15 +52,38 @@ class _HomeState extends State<Home> {
         padding: EdgeInsets.zero,
         children: <Widget>[
           StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(), // Escucha los cambios en el estado de autenticación
+            stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator()); // Muestra el loading mientras se obtiene el usuario
+                // Estado de carga: muestra un indicador de progreso
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                // Estado de error: muestra un mensaje de error
+                return ListTile(
+                  leading: const Icon(Icons.error, color: Colors.red),
+                  title: const Text('Error al cargar usuario'),
+                  subtitle: const Text('Por favor, intenta nuevamente.'),
+                );
+              } else if (!snapshot.hasData || snapshot.data == null) {
+                // Caso en que no hay datos del usuario (usuario no autenticado)
+                return ListTile(
+                  leading: const Icon(Icons.person_off, color: Colors.grey),
+                  title: const Text('Usuario no autenticado'),
+                  subtitle: const Text('Inicia sesión para continuar.'),
+                  onTap: () {
+                    // Acción para redirigir a pantalla de inicio de sesión
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Splash()),
+                    );
+                  },
+                );
               }
 
-              final usuario = snapshot.data;
-              final nombreUsuario = usuario?.displayName ?? 'Nombre de Usuario'; // Usamos un nombre predeterminado si es null
-              final correoUsuario = usuario?.email ?? 'usuario@ejemplo.com'; // Usamos un correo predeterminado si es null
+              // Usuario autenticado: muestra los datos
+              final usuario = snapshot.data!;
+              final nombreUsuario = usuario.displayName ?? 'Nombre de Usuario';
+              final correoUsuario = usuario.email ?? 'usuario@ejemplo.com';
 
               return UserAccountsDrawerHeader(
                 accountName: Text(nombreUsuario),
@@ -68,10 +92,11 @@ class _HomeState extends State<Home> {
                   backgroundColor: Colors.white,
                   child: Icon(Icons.person, color: Colors.blue),
                 ),
-                onDetailsPressed: null, // Acción cuando se hace clic en el avatar (sin implementación)
+                onDetailsPressed: null, // Acción si se desea implementar
               );
             },
           ),
+
           ListTile(
             leading: const Icon(Icons.home),
             title: const Text('Inicio'),
@@ -98,10 +123,10 @@ class _HomeState extends State<Home> {
             title: const Text('Perfil'),
             onTap: () {
               Navigator.pop(context); // Cierra el Drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PerfilUsuario()), // Navegar a la pantalla de perfil
-              );
+              setState(() {
+                _indiceSeleccionado = 1; // Cambia a la pantalla de perfil en la barra de navegación
+              });
+
             },
           ),
           ListTile(

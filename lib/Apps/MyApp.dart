@@ -1,4 +1,4 @@
-import 'package:actividad3_app/pantallas/inicio.dart';
+import 'package:actividad3_app/pantallas/inicio_sesion.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {

@@ -1,6 +1,7 @@
 import 'package:actividad3_app/pantallas/ajuste.dart';
 import 'package:actividad3_app/pantallas/home.dart';
 import 'package:actividad3_app/pantallas/inicio.dart';
+import 'package:actividad3_app/pantallas/inicio_sesion.dart';
 import 'package:actividad3_app/pantallas/perfil_usuario.dart';
 import 'package:actividad3_app/pantallas/registro.dart';
 import 'package:actividad3_app/pantallas/splash.dart';
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/splash', // Ruta inicial ahora es la pantalla Splash
       routes: {
         '/splash': (context) => Splash(),
-        '/inicio': (context) => const Inicio(),
+        '/inicio': (context) => const InicioSesion(),
         '/registro': (context) => Registro(),
         '/home': (context) => const Home(),
         '/ajuste': (context) => const Ajuste(),

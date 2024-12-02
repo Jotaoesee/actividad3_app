@@ -1,4 +1,4 @@
-import 'package:actividad3_app/pantallas/inicio.dart';
+import 'package:actividad3_app/pantallas/inicio_sesion.dart';
 import 'package:flutter/material.dart';
 
 class Splash extends StatefulWidget {
@@ -45,7 +45,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     Future.delayed(const Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Inicio()),
+        MaterialPageRoute(builder: (context) => const InicioSesion()),
       );
     });
   }
