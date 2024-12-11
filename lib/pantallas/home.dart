@@ -3,6 +3,7 @@ import 'package:actividad3_app/pantallas/perfil_usuario.dart';
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../clases/firebase_admin.dart';
 import 'ajuste.dart';
 
 class Home extends StatefulWidget {
@@ -14,6 +15,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _indiceSeleccionado = 0; // Índice para controlar la pestaña seleccionada
+  User? _usuario; // Variable para almacenar el usuario actual
+  String? _nombreUsuario; // Variable para almacenar el nombre del usuario
 
   // Lista de widgets que representarán las diferentes pantallas
   final List<Widget> _pantallas = [
@@ -21,6 +24,32 @@ class _HomeState extends State<Home> {
     const PerfilUsuario(),
     const Ajuste(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarUsuario();
+  }
+
+  void _cargarUsuario() async {
+    // Cargar los datos del usuario desde FirebaseAuth
+    FirebaseAuth.instance.authStateChanges().listen((usuario) async {
+      if (usuario != null) {
+        // Obtén los datos adicionales del usuario desde Firestore
+        FirebaseAdmin firebaseAdmin = FirebaseAdmin();
+        String? nombre = await firebaseAdmin.obtenerNombreUsuario();
+        setState(() {
+          _usuario = usuario;
+          _nombreUsuario = nombre; // Asigna el nombre obtenido
+        });
+      } else {
+        setState(() {
+          _usuario = null;
+          _nombreUsuario = null;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,51 +80,27 @@ class _HomeState extends State<Home> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                // Estado de carga: muestra un indicador de progreso
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                // Estado de error: muestra un mensaje de error
-                return ListTile(
-                  leading: const Icon(Icons.error, color: Colors.red),
-                  title: const Text('Error al cargar usuario'),
-                  subtitle: const Text('Por favor, intenta nuevamente.'),
+          if (_usuario == null)
+            ListTile(
+              leading: const Icon(Icons.person_off, color: Colors.grey),
+              title: const Text('Usuario no autenticado'),
+              subtitle: const Text('Inicia sesión para continuar.'),
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Splash()),
                 );
-              } else if (!snapshot.hasData || snapshot.data == null) {
-                // Caso en que no hay datos del usuario (usuario no autenticado)
-                return ListTile(
-                  leading: const Icon(Icons.person_off, color: Colors.grey),
-                  title: const Text('Usuario no autenticado'),
-                  subtitle: const Text('Inicia sesión para continuar.'),
-                  onTap: () {
-                    // Acción para redirigir a pantalla de inicio de sesión
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => Splash()),
-                    );
-                  },
-                );
-              }
-
-              // Usuario autenticado: muestra los datos
-              final usuario = snapshot.data!;
-              final nombreUsuario = usuario.displayName ?? 'Nombre de Usuario';
-              final correoUsuario = usuario.email ?? 'usuario@ejemplo.com';
-
-              return UserAccountsDrawerHeader(
-                accountName: Text(nombreUsuario),
-                accountEmail: Text(correoUsuario),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, color: Colors.blue),
-                ),
-                onDetailsPressed: null, // Acción si se desea implementar
-              );
-            },
-          ),
+              },
+            )
+          else
+            UserAccountsDrawerHeader(
+              accountName: Text(_nombreUsuario ?? 'Usuario no registrado'),
+              accountEmail: Text(_usuario!.email ?? 'Correo no disponible'),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Colors.blue),
+              ),
+            ),
 
           ListTile(
             leading: const Icon(Icons.home),
@@ -117,7 +122,6 @@ class _HomeState extends State<Home> {
               });
             },
           ),
-          // Nueva opción para ir al perfil
           ListTile(
             leading: const Icon(Icons.account_circle),
             title: const Text('Perfil'),
@@ -126,17 +130,16 @@ class _HomeState extends State<Home> {
               setState(() {
                 _indiceSeleccionado = 1; // Cambia a la pantalla de perfil en la barra de navegación
               });
-
             },
           ),
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Cerrar sesión'),
-            onTap: () {
-              // Lógica para cerrar sesión
+            onTap: () async {
+              await FirebaseAuth.instance.signOut();
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => Splash()), // Ajusta la navegación según tu app
+                MaterialPageRoute(builder: (context) => Splash()),
               );
               print("Cerrar sesión");
             },
@@ -193,3 +196,4 @@ class _HomeState extends State<Home> {
     );
   }
 }
+

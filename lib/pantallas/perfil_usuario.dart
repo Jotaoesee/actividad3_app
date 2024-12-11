@@ -38,6 +38,37 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
   };
 
+  @override
+  void initState() {
+    super.initState();
+
+    // Obtén el usuario autenticado
+    _usuario = FirebaseAuth.instance.currentUser;
+
+    // Carga los datos del usuario
+    _cargarDatosUsuario();
+  }
+
+
+// Método para cargar los datos del usuario desde Firebase
+  Future<void> _cargarDatosUsuario() async {
+    try {
+      FirebaseAdmin firebaseAdmin = FirebaseAdmin();
+      Map<String, dynamic> usuarioData = await firebaseAdmin.obtenerUsuario();  // Asegúrate de tener este método en tu FirebaseAdmin
+
+      setState(() {
+        _nombre = usuarioData['nombre'] ?? 'Nombre de Usuario';
+        _apellido = usuarioData['apellido'] ?? 'Apellido de Usuario';
+        _telefono = usuarioData['telefono'] ?? '+123 456 789';
+        _ciudad = usuarioData['ciudad'] ?? 'Ciudad, País';
+        _fechaNacimiento = usuarioData['fechaNacimiento'] ?? '01/01/1990';
+      });
+    } catch (e) {
+      print("Error al cargar los datos del usuario: $e");
+    }
+  }
+
+
   Future<void> _guardarDatosEnFirebase() async {
     try {
       FirebaseAdmin firebaseAdmin = FirebaseAdmin();
@@ -93,13 +124,6 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   String _esquemaColor = 'Azul';
   User? _usuario; // Para almacenar el usuario autenticado
-
-  @override
-  void initState() {
-    super.initState();
-    // Obtén el usuario autenticado
-    _usuario = FirebaseAuth.instance.currentUser;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,6 +189,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
                       color: Colors.white,
                     ),
                   ),
+
                   const SizedBox(height: 30),
                   // Información adicional en Card con bordes redondeados
                   _crearCard("Nombre", _nombre, _nombreController, (nuevoValor) {
