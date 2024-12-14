@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 enum EstadoTiempo { inicial, cargando, cargado, error }
 
@@ -18,6 +19,10 @@ class _PantallaTiempoState extends State<PantallaTiempo> {
   List<HoraTiempo> _datosTiempo = [];
   EstadoTiempo _estadoTiempo = EstadoTiempo.inicial;
   String? _mensajeError;
+
+  static const String _etiquetaTemperatura = 'Temperatura: ';
+  static const String _etiquetaHumedad = 'Humedad: ';
+  static const String _etiquetaPuntoRocio = 'Punto de Rocío: ';
 
   @override
   void initState() {
@@ -51,15 +56,16 @@ class _PantallaTiempoState extends State<PantallaTiempo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text('Pronóstico del Tiempo', style: TextStyle(color: Colors.white)),
-          backgroundColor: const Color(0xFF0D47A1)), // Azul más oscuro
+          title: const Text('Pronóstico del Tiempo',
+              style: TextStyle(color: Colors.white)),
+          backgroundColor: const Color(0xFF0D47A1)),
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xFF0D47A1), // Azul oscuro
-              Color(0xFF1F77D3), // Azul medio
-              Color(0xFF4AA3F3), // Azul claro
+              Color(0xFF0D47A1),
+              Color(0xFF1F77D3),
+              Color(0xFF4AA3F3),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -73,46 +79,79 @@ class _PantallaTiempoState extends State<PantallaTiempo> {
   Widget _construirCuerpo() {
     switch (_estadoTiempo) {
       case EstadoTiempo.inicial:
-        return const Center(child: Text('Presiona el botón para cargar el tiempo', style: TextStyle(color: Colors.white)));
+        return const Center(child: Text('Presiona el botón para cargar el tiempo',
+          style: TextStyle(color: Colors.white,fontFamily: 'Roboto'),
+        ));
       case EstadoTiempo.cargando:
-        return const Center(child: CircularProgressIndicator(color: Colors.white,));
+        return const Center(child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 10),
+              Text("Cargando datos del clima...", style: TextStyle(color: Colors.white, fontFamily: 'Roboto'))
+            ]
+        ));
       case EstadoTiempo.cargado:
         return RefreshIndicator(
-          onRefresh: () async {
-            _cargarDatosTiempo();
-          },
-          child: ListView.builder(
-            itemCount: _datosTiempo.length,
-            itemBuilder: (context, index) {
-              final horaTiempo = _datosTiempo[index];
-              final ahora = DateTime.now().add(Duration(hours: index));
-              final horaFormateada = DateFormat('HH:mm').format(ahora);
-              return Card(
-                elevation: 4,
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                color: Colors.white.withOpacity(0.8),
-                child: ListTile(
-                  title: Text('Hora: $horaFormateada', style: TextStyle(color: Color(0xFF0288D1))),
-                  subtitle: Text(
-                    'Temp: ${horaTiempo.temperatura.toStringAsFixed(1)}°C, '
-                        'Humedad: ${horaTiempo.humedadRelativa}%, '
-                        'Punto de Rocío: ${horaTiempo.puntoRocio.toStringAsFixed(1)}°C',
-                    style: const TextStyle(color: Color(0xFF0288D1)),
-                  ),
-                ),
-              );
+            onRefresh: () async {
+              _cargarDatosTiempo();
             },
-          ),
+            child: Center(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.85,
+                child: ListView.builder(
+                  itemCount: _datosTiempo.length,
+                  itemBuilder: (context, index) {
+                    final horaTiempo = _datosTiempo[index];
+                    final ahora = DateTime.now().add(Duration(hours: index));
+                    final horaFormateada = DateFormat('HH:mm').format(ahora);
+                    return Card(
+                      elevation: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      color: Colors.white.withOpacity(0.8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      child: ListTile(
+                        dense: true,
+                        title: Text('Hora: $horaFormateada',
+                          style: const TextStyle(fontSize: 18, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$_etiquetaTemperatura${horaTiempo.temperatura.toStringAsFixed(1)}°C',
+                              style: const TextStyle(fontSize: 16, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                            ),
+                            Text(
+                              '$_etiquetaHumedad${horaTiempo.humedadRelativa}%',
+                              style: const TextStyle(fontSize: 16, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                            ),
+                            Text(
+                              '$_etiquetaPuntoRocio${horaTiempo.puntoRocio.toStringAsFixed(1)}°C',
+                              style: const TextStyle(fontSize: 16, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                            ),
+                          ],
+                        ),
+                        leading: const Icon(FontAwesomeIcons.clock, color: Color(0xFF0288D1)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            )
         );
       case EstadoTiempo.error:
         return Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Text('Error: ${_mensajeError ?? "No se pudo cargar el clima"}', style: const TextStyle(color: Colors.white)),
+            child: Text('Error: ${_mensajeError ?? "No se pudo cargar el clima"}',
+                style: const TextStyle(color: Colors.white, fontFamily: 'Roboto')),
           ),
         );
       default:
-        return const Center(child: Text('Estado Desconocido', style: TextStyle(color: Colors.white)));
+        return const Center(child: Text('Estado Desconocido',
+          style: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
+        ));
     }
   }
 }
@@ -122,7 +161,11 @@ class HoraTiempo {
   final int humedadRelativa;
   final double puntoRocio;
 
-  HoraTiempo({required this.temperatura, required this.humedadRelativa, required this.puntoRocio});
+  HoraTiempo({
+    required this.temperatura,
+    required this.humedadRelativa,
+    required this.puntoRocio
+  });
 
   factory HoraTiempo.fromJson(Map<String, dynamic> json) {
     return HoraTiempo(
