@@ -1,5 +1,6 @@
 import 'package:actividad3_app/pantallas/inicio_sesion.dart';
 import 'package:flutter/material.dart';
+import 'package:animate_do/animate_do.dart';
 
 class Splash extends StatefulWidget {
   @override
@@ -10,7 +11,6 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   late AnimationController _progressController;
   late AnimationController _iconController;
   late Animation<double> _progressAnimation;
-  late Animation<double> _iconAnimation;
 
   @override
   void initState() {
@@ -23,30 +23,28 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     );
     _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_progressController)
       ..addListener(() {
-        setState(() {});
+        if (mounted) { // Validación del estado
+          setState(() {});
+        }
       });
 
-    // Animación para el icono de Flutter
+    // Animación para el icono
     _iconController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     );
-    _iconAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(CurvedAnimation(
-      parent: _iconController,
-      curve: Curves.easeInOut,
-    ))..addListener(() {
-      setState(() {});
-    });
 
     _progressController.forward();
     _iconController.repeat(reverse: true);
 
     // Redirigir a la pantalla principal después de 5 segundos
     Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const InicioSesion()),
-      );
+      if(mounted){ // Validación del estado
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const InicioSesion()),
+        );
+      }
     });
   }
 
@@ -60,36 +58,54 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Icono animado
-            ScaleTransition(
-              scale: _iconAnimation,
-              child: const Icon(
-                Icons.flutter_dash,
-                size: 100,
-                color: Colors.white,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF0D47A1),
+              Color(0xFF1F77D3),
+              Color(0xFF4AA3F3),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // Icono animado
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 9000),
+                child: ZoomIn(
+                  key: UniqueKey(),
+                  child: const Icon(
+                    Icons.flutter_dash,
+                    size: 100,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(height: 30),
-            // Barra de progreso
-            Container(
-              width: 200,
-              height: 10,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(5),
+              const SizedBox(height: 30),
+              // Barra de progreso
+              Container(
+                width: 200,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: _progressAnimation.value,
+                    backgroundColor: Colors.white.withOpacity(0.3),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0288D1)),
+                  ),
+                ),
               ),
-              child: LinearProgressIndicator(
-                value: _progressAnimation.value,
-                backgroundColor: Colors.grey[300],
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
