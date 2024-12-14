@@ -59,14 +59,14 @@ class _AjusteState extends State<Ajuste> {
         brightness: _modoOscuro ? Brightness.dark : Brightness.light,
         primaryColor: fondoColor,
         textTheme: TextTheme(
-          bodyMedium: TextStyle(color: textoColor),
+          bodyMedium: TextStyle(color: textoColor, fontFamily: 'Roboto'),
+          titleMedium: TextStyle(color: Colors.white, fontFamily: 'Roboto'),
         ),
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Ajustes"),
-          backgroundColor: fondoColor,
-        ),
+            title: const Text("Ajustes", style: TextStyle(color: Colors.white),),
+            backgroundColor: fondoColor),
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -83,41 +83,49 @@ class _AjusteState extends State<Ajuste> {
                 const Text(
                   'Personaliza tu experiencia',
                   style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Roboto'
                   ),
                 ),
                 const SizedBox(height: 20),
                 // Modo oscuro
                 Card(
+                  elevation: 6,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  elevation: 4,
                   child: SwitchListTile(
                     title: Text(
                       'Modo oscuro',
-                      style: TextStyle(color: textoColor),
+                      style: TextStyle(color: textoColor, fontFamily: 'Roboto'),
                     ),
                     value: _modoOscuro,
                     onChanged: _cambiarTema,
+                    activeColor: const Color(0xFF0288D1),
+                    trackColor: MaterialStateProperty.resolveWith<Color>((states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return const Color(0xFF0288D1).withOpacity(0.7);
+                      }
+                      return  Colors.grey.withOpacity(0.5);
+                    }),
                   ),
                 ),
                 const SizedBox(height: 20),
                 // Tamaño del texto
                 Card(
+                  elevation: 6,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  elevation: 4,
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                     child: Column(
                       children: [
                         Text(
                           'Tamaño del texto:',
-                          style: TextStyle(fontSize: 18, color: textoColor),
+                          style: TextStyle(fontSize: 18, color: textoColor, fontFamily: 'Roboto'),
                         ),
                         Slider(
                           value: _tamanoTexto,
@@ -130,29 +138,31 @@ class _AjusteState extends State<Ajuste> {
                               _tamanoTexto = nuevoValor;
                             });
                           },
+                          activeColor: const Color(0xFF0288D1),
+                          thumbColor: const Color(0xFF0288D1),
                         ),
                         Text(
                           'Texto de muestra',
-                          style: TextStyle(fontSize: _tamanoTexto, color: textoColor),
+                          style: TextStyle(fontSize: _tamanoTexto, color: textoColor, fontFamily: 'Roboto'),
                         ),
                       ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
                 // Esquema de color
                 Card(
+                  elevation: 6,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  elevation: 4,
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                     child: Column(
                       children: [
                         Text(
                           'Esquema de color:',
-                          style: TextStyle(fontSize: 18, color: textoColor),
+                          style: TextStyle(fontSize: 18, color: textoColor, fontFamily: 'Roboto'),
                         ),
                         DropdownButton<String>(
                           value: _esquemaColor,
@@ -167,10 +177,12 @@ class _AjusteState extends State<Ajuste> {
                               value: value,
                               child: Text(
                                 value,
-                                style: TextStyle(fontSize: 16, color: textoColor),
+                                style: TextStyle(fontSize: 16, color: textoColor, fontFamily: 'Roboto'),
                               ),
                             );
                           }).toList(),
+                          dropdownColor: Colors.white,
+                          style:  TextStyle(fontSize: 16, color: textoColor, fontFamily: 'Roboto'),
                         ),
                       ],
                     ),

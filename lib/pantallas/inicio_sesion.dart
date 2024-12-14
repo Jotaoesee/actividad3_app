@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+
 class InicioSesion extends StatefulWidget {
   const InicioSesion({Key? key}) : super(key: key);
 
@@ -18,47 +19,36 @@ class _InicioSesionState extends State<InicioSesion> {
 
   bool esContrasenaVisible = false;
   bool _isLoading = false; // Indicador de carga para inicio de sesión
+  final _formKey = GlobalKey<FormState>();
 
   // Expresión regular para validar el email
   final RegExp emailRegExp = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
 
   // Función de validación y autenticación
   void _validarYIniciarSesion() async {
-    final email = controladorDeEmail.text.trim();
-    final contrasena = controladorDeContrasena.text.trim();
-
-    if (email.isEmpty || !emailRegExp.hasMatch(email)) {
-      _mostrarMensaje("Por favor ingrese un correo electrónico válido.");
-      return;
-    }
-
-    if (contrasena.isEmpty || contrasena.length < 6) {
-      _mostrarMensaje("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: contrasena,
-      );
-      _mostrarMensaje("Inicio de sesión exitoso. Bienvenido, ${credential.user?.email}.", isSuccess: true);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const Home()),
-      );
-    } on FirebaseAuthException catch (e) {
-      _mostrarMensaje("Error: ${e.message}");
-    } catch (e) {
-      _mostrarMensaje("Ocurrió un error inesperado.");
-    } finally {
+    if(_formKey.currentState!.validate()){
       setState(() {
-        _isLoading = false;
+        _isLoading = true;
       });
+      try {
+        final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: controladorDeEmail.text,
+          password: controladorDeContrasena.text,
+        );
+        _mostrarMensaje("Inicio de sesión exitoso. Bienvenido, ${credential.user?.email}.", isSuccess: true);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+      } on FirebaseAuthException catch (e) {
+        _mostrarMensaje("Error: ${e.message}");
+      } catch (e) {
+        _mostrarMensaje("Ocurrió un error inesperado.");
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -72,15 +62,15 @@ class _InicioSesionState extends State<InicioSesion> {
     );
   }
 
-  // Widget para los campos de texto
   Widget _campoDeTexto({
     required TextEditingController controlador,
     required String labelText,
     required IconData icono,
     bool obscureText = false,
     Widget? suffixIcon,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controlador,
       obscureText: obscureText,
       decoration: InputDecoration(
@@ -95,9 +85,10 @@ class _InicioSesionState extends State<InicioSesion> {
           borderSide: BorderSide(color: Colors.grey),
         ),
         focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.blue),
+          borderSide: BorderSide(color: Color(0xFF0288D1)),
         ),
       ),
+      validator: validator,
     );
   }
 
@@ -105,8 +96,9 @@ class _InicioSesionState extends State<InicioSesion> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Inicio de sesión"),
-        backgroundColor: const Color.fromARGB(255, 28, 108, 178),
+        title: const Text("Inicio de sesión",
+            style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color(0xFF0D47A1),
       ),
       body: Stack(
         children: [
@@ -124,133 +116,162 @@ class _InicioSesionState extends State<InicioSesion> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Bienvenido",
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _campoDeTexto(
-                    controlador: controladorDeEmail,
-                    labelText: 'Correo electrónico',
-                    icono: Icons.email,
-                  ),
-                  const SizedBox(height: 26),
-                  _campoDeTexto(
-                    controlador: controladorDeContrasena,
-                    labelText: 'Contraseña',
-                    icono: Icons.lock,
-                    obscureText: !esContrasenaVisible,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        esContrasenaVisible
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Bienvenido",
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          esContrasenaVisible = !esContrasenaVisible;
-                        });
+                    ),
+                    const SizedBox(height: 20),
+                    _campoDeTexto(
+                      controlador: controladorDeEmail,
+                      labelText: 'Correo electrónico',
+                      icono: Icons.email,
+                      validator: (value) {
+                        if(value == null || value.isEmpty) {
+                          return "El email no puede estar vacío";
+                        }
+                        if (!emailRegExp.hasMatch(value)) {
+                          return "Ingrese un email válido";
+                        }
+                        return null;
                       },
                     ),
-                  ),
-                  const SizedBox(height: 30),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20.0),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: Colors.white, width: 2),
+                    const SizedBox(height: 26),
+                    _campoDeTexto(
+                      controlador: controladorDeContrasena,
+                      labelText: 'Contraseña',
+                      icono: Icons.lock,
+                      obscureText: !esContrasenaVisible,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          esContrasenaVisible
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
                         ),
+                        onPressed: () {
+                          setState(() {
+                            esContrasenaVisible = !esContrasenaVisible;
+                          });
+                        },
                       ),
-                      child: const Text(
-                        "o inicia sesión con tus redes sociales",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
+                      validator: (value) {
+                        if(value == null || value.isEmpty) {
+                          return "La contraseña no puede estar vacía";
+                        }
+                        if (value.length < 6) {
+                          return "La contraseña debe tener al menos 6 caracteres";
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 30),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 20.0),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: Colors.white, width: 2),
+                          ),
+                        ),
+                        child: const Text(
+                          "o inicia sesión con tus redes sociales",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.facebook,
-                          color: Colors.white,
-                          size: 30,
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.facebook,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            // Acción para Facebook
+                          },
                         ),
-                        onPressed: () {
-                          // Acción para Facebook
-                        },
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        icon: const Icon(
-                          FontAwesomeIcons.google,
-                          color: Colors.white,
-                          size: 30,
+                        const SizedBox(width: 20),
+                        IconButton(
+                          icon: const Icon(
+                            FontAwesomeIcons.google,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            // Acción para Google
+                          },
                         ),
-                        onPressed: () {
-                          // Acción para Google
-                        },
-                      ),
-                      const SizedBox(width: 20),
-                      IconButton(
-                        icon: const FaIcon(
-                          FontAwesomeIcons.twitter,
-                          color: Colors.white,
-                          size: 30,
+                        const SizedBox(width: 20),
+                        IconButton(
+                          icon: const FaIcon(
+                            FontAwesomeIcons.twitter,
+                            color: Colors.white,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            // Acción para Twitter
+                          },
                         ),
-                        onPressed: () {
-                          // Acción para Twitter
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      BotonPersonalizado(
-                        texto: "Iniciar Sesión",
-                        icono: Icons.login,
-                        alPresionar: _validarYIniciarSesion,
-                      ),
-                      BotonPersonalizado(
-                        texto: "Registrar cuenta",
-                        icono: Icons.app_registration,
-                        alPresionar: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Registro()),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        BotonPersonalizado(
+                          texto: "Iniciar Sesión",
+                          icono: Icons.login,
+                          alPresionar: _validarYIniciarSesion,
+                        ),
+                        BotonPersonalizado(
+                          texto: "Registrar cuenta",
+                          icono: Icons.app_registration,
+                          alPresionar: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => Registro()),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          // Indicador de carga en la parte inferior
           if (_isLoading)
-            const Positioned(
+            Positioned(
               left: 0,
               right: 0,
-              bottom: 0,
+              bottom: 100,
               child: Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text("Iniciando Sesión...",
+                          style: TextStyle(color: Colors.white, fontFamily: 'Roboto')),
+                    ],
+                  )
               ),
             ),
         ],
