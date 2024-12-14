@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/splash', // Ruta inicial ahora es la pantalla Splash
       routes: {
-        '/splash': (context) => PantallaTiempo(),
+        '/splash': (context) => const Home(),
         '/inicio': (context) => const InicioSesion(),
         '/registro': (context) => Registro(),
         '/home': (context) => const Home(),

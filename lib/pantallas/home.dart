@@ -135,13 +135,13 @@ class _HomeState extends State<Home> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.account_circle),
-            title: const Text('Coste Electricidad'),
+            leading: const Icon(Icons.thermostat),
+            title: const Text('Tiempo'),
             onTap: () {
               Navigator.pop(context); // Cierra el Drawer
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PantallaTiempo()), // Navegar directamente a CosteElectricidad
+                MaterialPageRoute(builder: (context) => PantallaTiempo()), // Navegar directamente a PantallaTiempo
               );
             },
           ),
