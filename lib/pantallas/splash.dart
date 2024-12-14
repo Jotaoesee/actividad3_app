@@ -12,6 +12,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
   late AnimationController _iconController;
   late Animation<double> _progressAnimation;
 
+
   @override
   void initState() {
     super.initState();
@@ -23,7 +24,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
     );
     _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_progressController)
       ..addListener(() {
-        if (mounted) { // Validación del estado
+        if (mounted) {
           setState(() {});
         }
       });
@@ -39,7 +40,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
 
     // Redirigir a la pantalla principal después de 5 segundos
     Future.delayed(const Duration(seconds: 5), () {
-      if(mounted){ // Validación del estado
+      if(mounted){
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const InicioSesion()),
@@ -77,9 +78,9 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
               // Icono animado
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 9000),
-                child: ZoomIn(
+                child: FadeInDown(
                   key: UniqueKey(),
-                  child: const Icon(
+                  child:  const Icon(
                     Icons.flutter_dash,
                     size: 100,
                     color: Colors.white,
@@ -100,7 +101,7 @@ class _SplashState extends State<Splash> with TickerProviderStateMixin {
                   child: LinearProgressIndicator(
                     value: _progressAnimation.value,
                     backgroundColor: Colors.white.withOpacity(0.3),
-                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0288D1)),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.greenAccent), // Barra de progreso verde
                   ),
                 ),
               ),
