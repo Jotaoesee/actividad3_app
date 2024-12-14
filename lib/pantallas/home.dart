@@ -1,10 +1,12 @@
 import 'package:actividad3_app/pantallas/inicio.dart';
+import 'package:actividad3_app/pantallas/pantalla_tiempo.dart';
 import 'package:actividad3_app/pantallas/perfil_usuario.dart';
 import 'package:actividad3_app/pantallas/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../clases/firebase_admin.dart';
 import 'ajuste.dart';
+
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -130,6 +132,17 @@ class _HomeState extends State<Home> {
               setState(() {
                 _indiceSeleccionado = 1; // Cambia a la pantalla de perfil en la barra de navegación
               });
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.account_circle),
+            title: const Text('Coste Electricidad'),
+            onTap: () {
+              Navigator.pop(context); // Cierra el Drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PantallaTiempo()), // Navegar directamente a CosteElectricidad
+              );
             },
           ),
           ListTile(

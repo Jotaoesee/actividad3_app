@@ -2,10 +2,11 @@ import 'package:actividad3_app/pantallas/ajuste.dart';
 import 'package:actividad3_app/pantallas/home.dart';
 import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:actividad3_app/pantallas/inicio_sesion.dart';
+import 'package:actividad3_app/pantallas/pantalla_tiempo.dart';
 import 'package:actividad3_app/pantallas/perfil_usuario.dart';
 import 'package:actividad3_app/pantallas/registro.dart';
-import 'package:actividad3_app/pantallas/splash.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';import 'package:actividad3_app/pantallas/splash.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -31,12 +32,14 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/splash', // Ruta inicial ahora es la pantalla Splash
       routes: {
-        '/splash': (context) => Splash(),
+        '/splash': (context) => PantallaTiempo(),
         '/inicio': (context) => const InicioSesion(),
         '/registro': (context) => Registro(),
         '/home': (context) => const Home(),
         '/ajuste': (context) => const Ajuste(),
         '/perfilUsuario': (context) =>  const PerfilUsuario(),
+        '/costeElectricidad': (context) =>  PantallaTiempo(),
+
       },
       debugShowCheckedModeBanner: false,
     );
