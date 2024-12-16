@@ -306,54 +306,61 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
     );
   }
 
-// Método para mostrar el cuadro de diálogo de edición
-  Widget _mostrarDialogoEdicion(
+  void _mostrarDialogoEdicion(
       String titulo,
       String campo,
       TextEditingController controlador,
-      Function(String) onGuardar) {
+      Function(String) onGuardar,
+      ) {
     controlador.text = campo;
 
-    return  AlertDialog(
-      title: Text("Editar $titulo"),
-      content: TextFormField(
-        controller: controlador,
-        decoration: InputDecoration(hintText: "Ingrese $titulo"),
-        validator: (value) {
-          if(value == null || value.isEmpty){
-            return "Este campo es obligatorio";
-          }
-          if(titulo == "Teléfono"){
-            if(!RegExp(r'^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$').hasMatch(value)) {
-              return "Ingrese un telefono válido";
-            }
-          }
-          if(titulo == "Fecha de nacimiento"){
-            if(!RegExp(r'^\d{1,2}\/\d{1,2}\/\d{4}$').hasMatch(value)) {
-              return "Ingrese una fecha válida dd/mm/aaaa";
-            }
-          }
-          return null;
-        },
-      ),
-      actions: <Widget>[
-        TextButton(
-          child: const Text("Cancelar"),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        TextButton(
-          child: const Text("Guardar"),
-          onPressed: () {
-            onGuardar(controlador.text);
-            Navigator.pop(context);
-            _guardarDatosEnFirebase();
-          },
-        ),
-      ],
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Editar $titulo"),
+          content: TextFormField(
+            controller: controlador,
+            decoration: InputDecoration(hintText: "Ingrese $titulo"),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return "Este campo es obligatorio";
+              }
+              if (titulo == "Teléfono" &&
+                  !RegExp(r'^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$')
+                      .hasMatch(value)) {
+                return "Ingrese un teléfono válido";
+              }
+              if (titulo == "Fecha de nacimiento" &&
+                  !RegExp(r'^\d{1,2}\/\d{1,2}\/\d{4}$').hasMatch(value)) {
+                return "Ingrese una fecha válida (dd/mm/aaaa)";
+              }
+              return null;
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("Cancelar"),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text("Guardar"),
+              onPressed: () {
+                if (controlador.text.isNotEmpty) {
+                  onGuardar(controlador.text); // Guardamos el texto editado
+                  Navigator.pop(context);
+                  _guardarDatosEnFirebase(); // Guardamos en Firebase
+                }
+              },
+            ),
+          ],
+        );
+      },
     );
   }
+
 
 
 

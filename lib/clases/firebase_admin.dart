@@ -50,6 +50,32 @@ class FirebaseAdmin {
     }
   }
 
+  // Método para guardar los datos adicionales del usuario
+  Future<void> guardarDatosAdicionales(String uid, Map<String, dynamic> usuarioData) async {
+    try {
+      // Referencia al documento del usuario en Firestore
+      DocumentReference usuarioRef = _firestore.collection('usuarios').doc(uid);
+
+      // Referencia a la subcolección "datos_adicionales" usando el uid del usuario
+      final subcoleccionRef = usuarioRef.collection('datos_adicionales').doc(uid); // Usamos el uid como id del documento
+
+      // Verifica si el documento de datos adicionales ya existe
+      DocumentSnapshot snapshot = await subcoleccionRef.get();
+      if (snapshot.exists) {
+        // Si el documento existe, usamos 'update' para evitar sobrescribirlo
+        await subcoleccionRef.update(usuarioData);
+        print("Datos adicionales actualizados exitosamente");
+      } else {
+        // Si no existe, usamos 'set' para crearlo
+        await subcoleccionRef.set(usuarioData);
+        print("Datos adicionales guardados exitosamente");
+      }
+    } catch (e) {
+      print("Error al guardar datos adicionales del usuario: $e");
+      throw Exception("Error al guardar datos adicionales: $e");
+    }
+  }
+
   // Función para guardar un usuario en Firestore
   Future<void> guardarUsuario(Map<String, dynamic> usuarioData) async {
     try {
@@ -72,6 +98,21 @@ class FirebaseAdmin {
     }
   }
 
+  // Método para mapear un usuario con valores seguros
+  Usuario mapearUsuario(QueryDocumentSnapshot usuario) {
+    final data = usuario.data() as Map<String, dynamic>;
+    return Usuario(
+      id: usuario.id,
+      nombre: data['nombre'] ?? 'Sin nombre',
+      apellido: data['apellido'] ?? 'Sin apellido',
+      fechaNacimiento: data['fecha_nacimiento'] ?? 'Sin fecha',
+      telefono: data['telefono'] ?? 'Sin teléfono',
+      ciudad: data['ciudad'] ?? 'Sin ciudad',
+      fotoPerfil: data['fotoPerfil'],
+    );
+  }
+
+  // Función para subir la imagen de perfil
   Future<void> subirImagenPerfil(File imagen) async {
     try {
       User? usuario = _auth.currentUser;
@@ -95,6 +136,8 @@ class FirebaseAdmin {
       throw Exception("Error al subir la imagen");
     }
   }
+
+  // Función para subir imagen de perfil usando bytes
   Future<void> subirImagenPerfilBytes(Uint8List imagenBytes) async {
     try {
       User? usuario = _auth.currentUser;
@@ -115,4 +158,25 @@ class FirebaseAdmin {
       throw Exception("Error al subir la imagen");
     }
   }
+}
+
+// Clase para representar la información del usuario
+class Usuario {
+  final String id;
+  final String nombre;
+  final String apellido;
+  final String fechaNacimiento;
+  final String telefono;
+  final String ciudad;
+  final String? fotoPerfil;
+
+  Usuario({
+    required this.id,
+    required this.nombre,
+    required this.apellido,
+    required this.fechaNacimiento,
+    required this.telefono,
+    required this.ciudad,
+    this.fotoPerfil,
+  });
 }

@@ -1,3 +1,4 @@
+import 'package:actividad3_app/pantallas/editar_datos_adicionales.dart';
 import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:actividad3_app/pantallas/pantalla_tiempo.dart';
 import 'package:actividad3_app/pantallas/perfil_usuario.dart';
@@ -142,6 +143,17 @@ class _HomeState extends State<Home> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => PantallaTiempo()), // Navegar directamente a PantallaTiempo
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.assignment_ind),
+            title: const Text('Datos adicionales'),
+            onTap: () {
+              Navigator.pop(context); // Cierra el Drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EditarDatosAdicionales(userId: "userId")), // Navegar directamente a PantallaTiempo
               );
             },
           ),

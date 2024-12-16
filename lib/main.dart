@@ -1,4 +1,5 @@
 import 'package:actividad3_app/pantallas/ajuste.dart';
+import 'package:actividad3_app/pantallas/editar_datos_adicionales.dart';
 import 'package:actividad3_app/pantallas/home.dart';
 import 'package:actividad3_app/pantallas/inicio.dart';
 import 'package:actividad3_app/pantallas/inicio_sesion.dart';
