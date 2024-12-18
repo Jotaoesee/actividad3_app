@@ -176,6 +176,21 @@ class FirebaseAdmin {
     }
   }
 
+  // Método para buscar usuarios por nombre usando el índice
+  Future<List<Usuario>> buscarUsuariosPorNombre(String nombre) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore.collection('usuarios')
+          .where('nombre', isGreaterThanOrEqualTo: nombre)
+          .where('nombre', isLessThan: nombre + 'z')
+          .get();
+
+      return querySnapshot.docs.map((doc) => mapearUsuario(doc)).toList();
+    } catch (e) {
+      print("Error al buscar usuarios por nombre: $e");
+      throw Exception("Error al buscar usuarios por nombre: $e");
+    }
+  }
+
   // Método para obtener los ajustes del usuario
   Future<Map<String, dynamic>> obtenerAjustes(String uid) async {
     try {

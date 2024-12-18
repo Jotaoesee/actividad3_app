@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../clases/data_holder.dart';
+import '../clases/firebase_admin.dart';
 
 class Inicio extends StatefulWidget {
   @override
@@ -9,73 +10,125 @@ class Inicio extends StatefulWidget {
 }
 
 class _InicioState extends State<Inicio> {
-  bool _vistaLista = true; // Controla si la vista es Lista o Grid
+  bool _vistaLista = true;
   final DataHolder _dataHolder = DataHolder();
+  final TextEditingController _buscarController = TextEditingController();
+  bool _buscando = false;
+
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Map<String, dynamic>>(
-        stream: _dataHolder.getStreamDeAjustes(),
-        builder: (context, snapshot) {
-          if(!snapshot.hasData){
-            return const Center(child: CircularProgressIndicator(color: Colors.white,));
-          }
-          final ajustes = snapshot.data!;
-          final modoOscuro = ajustes['modoOscuro'] ?? false;
-          final esquemaColor = ajustes['esquemaColor'] ?? 'Azul';
+      stream: _dataHolder.getStreamDeAjustes(),
+      builder: (context, snapshot) {
+        if(!snapshot.hasData){
+          return const Center(child: CircularProgressIndicator(color: Colors.white,));
+        }
+        final ajustes = snapshot.data!;
+        final modoOscuro = ajustes['modoOscuro'] ?? false;
+        final esquemaColor = ajustes['esquemaColor'] ?? 'Azul';
 
-          final Map<String, List<Color>> esquemasDeColor = {
-            'Azul': [Color(0xFF0D47A1), Color(0xFF1F77D3), Color(0xFF4AA3F3)],
-            'Verde': [Color(0xFF1B5E20), Color(0xFF4CAF50), Color(0xFF81C784)],
-            'Rojo': [Color(0xFFB71C1C), Color(0xFFE53935), Color(0xFFFFCDD2)],
-            'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
-          };
-          final Color fondoColor = modoOscuro ? Colors.black : esquemasDeColor[esquemaColor]![0];
-          final Color textoColor = modoOscuro ? Colors.white : Colors.black;
-          final double tamanoTexto = ajustes['tamanoTexto'] ?? 16.0;
+        final Map<String, List<Color>> esquemasDeColor = {
+          'Azul': [Color(0xFF0D47A1), Color(0xFF1F77D3), Color(0xFF4AA3F3)],
+          'Verde': [Color(0xFF1B5E20), Color(0xFF4CAF50), Color(0xFF81C784)],
+          'Rojo': [Color(0xFFB71C1C), Color(0xFFE53935), Color(0xFFFFCDD2)],
+          'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
+        };
+        final Color fondoColor = modoOscuro ? Colors.black : esquemasDeColor[esquemaColor]![0];
+        final Color textoColor = modoOscuro ? Colors.white : Colors.black;
+        final double tamanoTexto = ajustes['tamanoTexto'] ?? 16.0;
 
-          return Theme(
-            data: ThemeData(
-              brightness: modoOscuro ? Brightness.dark : Brightness.light,
-              primaryColor: fondoColor,
-              textTheme: TextTheme(
-                bodyMedium: TextStyle(color: textoColor, fontFamily: 'Roboto', fontSize: tamanoTexto),
-              ),
+
+        return Theme(
+          data: ThemeData(
+            brightness: modoOscuro ? Brightness.dark : Brightness.light,
+            primaryColor: fondoColor,
+            textTheme: TextTheme(
+              bodyMedium: TextStyle(color: textoColor, fontFamily: 'Roboto', fontSize: tamanoTexto),
             ),
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text("Inicio",
-                    style: TextStyle(color: Colors.white)),
-                backgroundColor: fondoColor
-                ,
-                actions: [
-                  IconButton(
-                    icon: Icon(_vistaLista ? FontAwesomeIcons.gripVertical : FontAwesomeIcons.listUl,
-                        color: Colors.white),
-                    onPressed: () {
-                      setState(() {
-                        _vistaLista = !_vistaLista; // Alternar entre Lista y Grid
-                      });
-                    },
+          ),
+          child: Scaffold(
+            appBar: AppBar(
+              title: const Text("Inicio",
+                  style: TextStyle(color: Colors.white)),
+              backgroundColor: fondoColor,
+              actions: [
+                IconButton(
+                  icon: Icon(_vistaLista ? FontAwesomeIcons.gripVertical : FontAwesomeIcons.listUl,
+                      color: Colors.white),
+                  onPressed: () {
+                    setState(() {
+                      _vistaLista = !_vistaLista;
+                    });
+                  },
+                ),
+              ],
+            ),
+            body: Stack(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: esquemasDeColor[esquemaColor]!,
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
                   ),
-                ],
-              ),
-              body: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: esquemasDeColor[esquemaColor]!,
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _buscarController,
+                                decoration: const InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  hintText: 'Buscar por nombre',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.search, color: Colors.white,),
+                              onPressed: (){
+                                setState(() {
+
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: _contenido(tamanoTexto, textoColor),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: _contenido(tamanoTexto, textoColor),
-              ),
+                if (_buscando)
+                  const Positioned.fill(
+                    child: Center(
+                        child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(Colors.white))
+                    ),
+                  ),
+              ],
             ),
-          );
-        }
+          ),
+        );
+      },
     );
   }
+
 
   Widget _contenido(double tamanoTexto, Color textColor) {
     return StreamBuilder<QuerySnapshot>(
@@ -97,14 +150,22 @@ class _InicioState extends State<Inicio> {
           ));
         }
 
-        final usuarios = snapshot.data!.docs;
+        List<QueryDocumentSnapshot> usuarios = snapshot.data!.docs;
+        if(_buscarController.text.isNotEmpty){
+          usuarios =  usuarios.where((usuario) => _mapearUsuario(usuario)['nombre'].toLowerCase().contains(_buscarController.text.toLowerCase())).toList();
+        }
+
 
         return _vistaLista
             ? _buildListView(usuarios, tamanoTexto, textColor)
             : _buildGridView(usuarios, tamanoTexto, textColor);
+
       },
     );
   }
+
+
+
 
   Widget _buildListView(List<QueryDocumentSnapshot> usuarios, double tamanoTexto, Color textColor) {
     return ListView.separated(
@@ -134,6 +195,7 @@ class _InicioState extends State<Inicio> {
       },
     );
   }
+
 
   Widget _buildGridView(List<QueryDocumentSnapshot> usuarios, double tamanoTexto, Color textColor) {
     return GridView.builder(
@@ -204,6 +266,8 @@ class _InicioState extends State<Inicio> {
       },
     );
   }
+
+
 
   /// Método para mapear un usuario con valores seguros
   Map<String, dynamic> _mapearUsuario(QueryDocumentSnapshot usuario) {
