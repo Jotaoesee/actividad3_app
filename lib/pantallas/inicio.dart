@@ -153,13 +153,18 @@ class _InicioState extends State<Inicio> {
         List<QueryDocumentSnapshot> usuarios = snapshot.data!.docs;
         if(_buscarController.text.isNotEmpty){
           usuarios =  usuarios.where((usuario) => _mapearUsuario(usuario)['nombre'].toLowerCase().contains(_buscarController.text.toLowerCase())).toList();
+          if(usuarios.isEmpty){
+            return Center(
+              child: Text('No se encontraron usuarios con ese nombre.',
+                style: TextStyle(color: textColor, fontSize: tamanoTexto),
+              ),
+            );
+          }
         }
-
 
         return _vistaLista
             ? _buildListView(usuarios, tamanoTexto, textColor)
             : _buildGridView(usuarios, tamanoTexto, textColor);
-
       },
     );
   }
