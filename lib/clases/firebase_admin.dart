@@ -53,11 +53,12 @@ class FirebaseAdmin {
   // Método para guardar los datos adicionales del usuario
   Future<void> guardarDatosAdicionales(String uid, Map<String, dynamic> usuarioData) async {
     try {
+      User? usuario = _auth.currentUser;
       // Referencia al documento del usuario en Firestore
-      DocumentReference usuarioRef = _firestore.collection('usuarios').doc(uid);
+      DocumentReference usuarioRef = _firestore.collection('usuarios').doc(usuario?.uid);
 
       // Referencia a la subcolección "datos_adicionales" usando el uid del usuario
-      final subcoleccionRef = usuarioRef.collection('datos_adicionales').doc(uid); // Usamos el uid como id del documento
+      final subcoleccionRef =  usuarioRef.collection('datos_adicionales').doc(uid); // Usamos el uid como id del documento
 
       // Verifica si el documento de datos adicionales ya existe
       DocumentSnapshot snapshot = await subcoleccionRef.get();
@@ -156,6 +157,44 @@ class FirebaseAdmin {
     } catch (e) {
       print("Error al subir la imagen: $e");
       throw Exception("Error al subir la imagen");
+    }
+  }
+
+
+  // Método para guardar los ajustes del usuario
+  Future<void> guardarAjustes(String uid, Map<String, dynamic> ajustesData) async {
+    try {
+      // Referencia al documento de ajustes del usuario en Firestore
+      DocumentReference ajustesRef = _firestore.collection('ajustes').doc(uid);
+
+      // Guardar o actualizar los ajustes del usuario en Firestore
+      await ajustesRef.set(ajustesData);
+      print("Ajustes guardados exitosamente");
+    } catch (e) {
+      print("Error al guardar ajustes: $e");
+      throw Exception("Error al guardar ajustes");
+    }
+  }
+
+  // Método para obtener los ajustes del usuario
+  Future<Map<String, dynamic>> obtenerAjustes(String uid) async {
+    try {
+      // Referencia al documento de ajustes del usuario en Firestore
+      DocumentReference ajustesRef = _firestore.collection('ajustes').doc(uid);
+
+      // Obtener el documento de ajustes del usuario
+      DocumentSnapshot snapshot = await ajustesRef.get();
+
+      // Verificar si el documento existe
+      if (snapshot.exists) {
+        return snapshot.data() as Map<String, dynamic>;
+      } else {
+        // Si no existen, retornamos un map vacío
+        return {};
+      }
+    } catch (e) {
+      print("Error al obtener los ajustes del usuario: $e");
+      throw Exception("Error al obtener los ajustes del usuario");
     }
   }
 }

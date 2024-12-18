@@ -1,5 +1,8 @@
 import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
 import 'package:flutter/material.dart';
+import '../clases/data_holder.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class Ajuste extends StatefulWidget {
   const Ajuste({Key? key}) : super(key: key);
@@ -13,6 +16,7 @@ class _AjusteState extends State<Ajuste> {
   double _tamanoTexto = 16.0;
   String _esquemaColor = 'Azul';
 
+  final DataHolder _dataHolder = DataHolder();
   final Map<String, List<Color>> esquemasDeColor = {
     'Azul': [Color(0xFF0D47A1), Color(0xFF1F77D3), Color(0xFF4AA3F3)],
     'Verde': [Color(0xFF1B5E20), Color(0xFF4CAF50), Color(0xFF81C784)],
@@ -20,17 +24,44 @@ class _AjusteState extends State<Ajuste> {
     'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
   };
 
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarAjustes();
+  }
+
+  Future<void> _cargarAjustes() async {
+    try {
+      User? usuario = FirebaseAuth.instance.currentUser;
+      if(usuario != null){
+        Map<String, dynamic> ajustes = await _dataHolder.firebaseAdmin.obtenerAjustes(usuario.uid);
+        setState(() {
+          _modoOscuro = ajustes['modoOscuro'] ?? false;
+          _tamanoTexto = ajustes['tamanoTexto'] ?? 16.0;
+          _esquemaColor = ajustes['esquemaColor'] ?? 'Azul';
+        });
+      }
+    } catch (e) {
+      print('Error al cargar los ajustes: $e');
+    }
+  }
+
+
   void _cambiarTema(bool modoOscuro) {
     setState(() {
       _modoOscuro = modoOscuro;
     });
+    _guardarAjustes();
   }
 
   void _cambiarEsquemaColor(String color) {
     setState(() {
       _esquemaColor = color;
     });
+    _guardarAjustes();
   }
+
 
   void _restablecerAjustes() {
     setState(() {
@@ -38,16 +69,34 @@ class _AjusteState extends State<Ajuste> {
       _tamanoTexto = 16.0;
       _esquemaColor = 'Azul';
     });
+    _guardarAjustes();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Ajustes restablecidos')),
     );
   }
 
-  void _guardarAjustes() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ajustes guardados')),
-    );
+  void _guardarAjustes() async {
+    try {
+      User? usuario = FirebaseAuth.instance.currentUser;
+      if(usuario != null){
+        final ajustesData = {
+          'modoOscuro': _modoOscuro,
+          'tamanoTexto': _tamanoTexto,
+          'esquemaColor': _esquemaColor,
+        };
+        await _dataHolder.firebaseAdmin.guardarAjustes(usuario.uid, ajustesData);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ajustes guardados')),
+        );
+      }
+    } catch (e) {
+      print('Error al guardar ajustes en Firebase: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar ajustes: $e')),
+      );
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +186,7 @@ class _AjusteState extends State<Ajuste> {
                             setState(() {
                               _tamanoTexto = nuevoValor;
                             });
+                            _guardarAjustes();
                           },
                           activeColor: const Color(0xFF0288D1),
                           thumbColor: const Color(0xFF0288D1),
