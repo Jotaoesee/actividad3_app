@@ -8,6 +8,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../clases/firebase_admin.dart';
+import '../clases/data_holder.dart';
+
 
 class PerfilUsuario extends StatefulWidget {
   const PerfilUsuario({Key? key}) : super(key: key);
@@ -33,6 +35,8 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
   final TextEditingController _telefonoController = TextEditingController();
   final TextEditingController _ciudadController = TextEditingController();
   final TextEditingController _fechaNacimientoController = TextEditingController();
+  final DataHolder _dataHolder = DataHolder();
+
 
   final Map<String, List<Color>> esquemasDeColor = {
     'Azul': [Color(0xFF0D47A1), Color(0xFF1F77D3), Color(0xFF4AA3F3)],
@@ -53,7 +57,6 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
     // Carga los datos del usuario
     _cargarDatosUsuario();
-
   }
 
 
@@ -145,143 +148,157 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
 
   @override
   Widget build(BuildContext context) {
-    final Color fondoColor = esquemasDeColor[_esquemaColor]![0];
-    final Color textoColor = Colors.white;
+    return StreamBuilder<Map<String, dynamic>>(
+        stream: _dataHolder.getStreamDeAjustes(),
+        builder: (context, snapshot) {
+          if(!snapshot.hasData){
+            return const Center(child: CircularProgressIndicator(color: Colors.white,));
+          }
+          final ajustes = snapshot.data!;
+          final modoOscuro = ajustes['modoOscuro'] ?? false;
+          final esquemaColor = ajustes['esquemaColor'] ?? 'Azul';
+          final double tamanoTexto = ajustes['tamanoTexto'] ?? 16.0;
 
-    return Theme(
-      data: ThemeData(
-        primaryColor: fondoColor,
-        textTheme: TextTheme(bodyMedium: TextStyle(color: textoColor, fontFamily: 'Roboto')),
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Perfil del Usuario", style: TextStyle(color: Colors.white),),
-          backgroundColor: fondoColor,
-        ),
-        body: Stack(
-            children:[
-              SingleChildScrollView(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: esquemasDeColor[_esquemaColor]!,
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 20),
-                          // Método para mostrar la imagen de perfil, utilizando MemoryImage en Web
-                          ClipOval(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Colors.white,
-                                      width: 3
-                                  )
-                              ),
-                              child: CircleAvatar(
-                                radius: 70,
-                                backgroundImage: _imagenPerfilBytes == null
-                                    ? const NetworkImage('https://via.placeholder.com/150')
-                                    : (kIsWeb
-                                    ? MemoryImage(_imagenPerfilBytes!)
-                                    : _imagenPerfilBytes == null ? null: FileImage(File(_imagenPerfilBytes!.join(""))) as ImageProvider<Object>),
-                              ),
+          final Color fondoColor = modoOscuro ? Colors.black : esquemasDeColor[esquemaColor]![0];
+          final Color textoColor = modoOscuro ? Colors.white : Colors.black;
+
+          return Theme(
+            data: ThemeData(
+              primaryColor: fondoColor,
+              brightness: modoOscuro ? Brightness.dark : Brightness.light,
+              textTheme: TextTheme(bodyMedium: TextStyle(color: textoColor, fontFamily: 'Roboto', fontSize: tamanoTexto)),
+            ),
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text("Perfil del Usuario", style: TextStyle(color: Colors.white),),
+                backgroundColor: fondoColor,
+              ),
+              body: Stack(
+                  children:[
+                    SingleChildScrollView(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: esquemasDeColor[esquemaColor]!,
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 20),
+                                // Método para mostrar la imagen de perfil, utilizando MemoryImage en Web
+                                ClipOval(
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        border: Border.all(
+                                            color: Colors.white,
+                                            width: 3
+                                        )
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 70,
+                                      backgroundImage: _imagenPerfilBytes == null
+                                          ? const NetworkImage('https://via.placeholder.com/150')
+                                          : (kIsWeb
+                                          ? MemoryImage(_imagenPerfilBytes!)
+                                          : _imagenPerfilBytes == null ? null: FileImage(File(_imagenPerfilBytes!.join(""))) as ImageProvider<Object>),
+                                    ),
+                                  ),
+                                ),
+
+                                IconButton(
+                                  icon: const Icon(Icons.camera_alt, color: Colors.white,),
+                                  onPressed: () {
+                                    _mostrarOpcionesImagen();
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                // Nombre del usuario y correo
+                                Text(
+                                  _nombre,
+                                  style:  TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: textoColor,
+                                      fontFamily: 'Roboto'
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _usuario?.email ?? "usuario@correo.com", // Correo si existe, sino un valor por defecto
+                                  style:  TextStyle(
+                                      fontSize: tamanoTexto - 2,
+                                      color: textoColor,
+                                      fontFamily: 'Roboto'
+                                  ),
+                                ),
+
+                                const SizedBox(height: 30),
+                                // Información adicional en Card con bordes redondeados
+                                _crearCard("Nombre", _nombre, _nombreController, (nuevoValor) {
+                                  setState(() {
+                                    _nombre = nuevoValor;
+                                  });
+                                }),
+                                _crearCard("Apellido", _apellido, _apellidoController, (nuevoValor) {
+                                  setState(() {
+                                    _apellido = nuevoValor;
+                                  });
+                                }),
+                                _crearCard("Fecha de nacimiento", _fechaNacimiento, _fechaNacimientoController, (nuevoValor) {
+                                  setState(() {
+                                    _fechaNacimiento = nuevoValor;
+                                  });
+                                }),
+                                _crearCard("Teléfono", _telefono, _telefonoController, (nuevoValor) {
+                                  setState(() {
+                                    _telefono = nuevoValor;
+                                  });
+                                }),
+                                _crearCard("Ciudad", _ciudad, _ciudadController, (nuevoValor) {
+                                  setState(() {
+                                    _ciudad = nuevoValor;
+                                  });
+                                }),
+
+                                const SizedBox(height: 5),
+                                // Botón de cerrar sesión
+                                BotonPersonalizado(
+                                  texto: "Cerrar sesión",
+                                  icono: FontAwesomeIcons.signOutAlt,
+                                  alPresionar: () {
+                                    FirebaseAuth.instance.signOut(); // Cierra sesión en Firebase
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => Splash()),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
-
-                          IconButton(
-                            icon: const Icon(Icons.camera_alt, color: Colors.white,),
-                            onPressed: () {
-                              _mostrarOpcionesImagen();
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          // Nombre del usuario y correo
-                          Text(
-                            _nombre,
-                            style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontFamily: 'Roboto'
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _usuario?.email ?? "usuario@correo.com", // Correo si existe, sino un valor por defecto
-                            style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontFamily: 'Roboto'
-                            ),
-                          ),
-
-                          const SizedBox(height: 30),
-                          // Información adicional en Card con bordes redondeados
-                          _crearCard("Nombre", _nombre, _nombreController, (nuevoValor) {
-                            setState(() {
-                              _nombre = nuevoValor;
-                            });
-                          }),
-                          _crearCard("Apellido", _apellido, _apellidoController, (nuevoValor) {
-                            setState(() {
-                              _apellido = nuevoValor;
-                            });
-                          }),
-                          _crearCard("Fecha de nacimiento", _fechaNacimiento, _fechaNacimientoController, (nuevoValor) {
-                            setState(() {
-                              _fechaNacimiento = nuevoValor;
-                            });
-                          }),
-                          _crearCard("Teléfono", _telefono, _telefonoController, (nuevoValor) {
-                            setState(() {
-                              _telefono = nuevoValor;
-                            });
-                          }),
-                          _crearCard("Ciudad", _ciudad, _ciudadController, (nuevoValor) {
-                            setState(() {
-                              _ciudad = nuevoValor;
-                            });
-                          }),
-
-                          const SizedBox(height: 5),
-                          // Botón de cerrar sesión
-                          BotonPersonalizado(
-                            texto: "Cerrar sesión",
-                            icono: FontAwesomeIcons.signOutAlt,
-                            alPresionar: () {
-                              FirebaseAuth.instance.signOut(); // Cierra sesión en Firebase
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => Splash()),
-                              );
-                            },
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                    if(_isLoading)
+                      const Positioned(
+                          top: 0,
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Center(child: CircularProgressIndicator(color: Colors.white,))
+                      ),
+                  ]
               ),
-              if(_isLoading)
-                const Positioned(
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Center(child: CircularProgressIndicator(color: Colors.white,))
-                ),
-            ]
-        ),
-      ),
+            ),
+          );
+        }
     );
   }
 

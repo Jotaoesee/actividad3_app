@@ -1,6 +1,8 @@
-
 import 'firebase_admin.dart';
 import 'http_admin.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class DataHolder {
   // Singleton para que haya una única instancia de DataHolder
@@ -30,5 +32,19 @@ class DataHolder {
     // Por ejemplo, inicializar FirebaseAdmin con configuración específica
     await _firebaseAdmin.inicializarFirebase();
 
+  }
+
+  // Metodo para obtener un Stream de ajustes de un usuario
+  Stream<Map<String,dynamic>> getStreamDeAjustes(){
+    User? user = FirebaseAuth.instance.currentUser;
+    if(user == null){
+      return const Stream.empty();
+    }
+
+    return FirebaseFirestore.instance
+        .collection("ajustes")
+        .doc(user.uid)
+        .snapshots()
+        .map((doc) => doc.data() ?? {});
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../clases/data_holder.dart';
 
 class Inicio extends StatefulWidget {
   @override
@@ -9,44 +10,74 @@ class Inicio extends StatefulWidget {
 
 class _InicioState extends State<Inicio> {
   bool _vistaLista = true; // Controla si la vista es Lista o Grid
+  final DataHolder _dataHolder = DataHolder();
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Inicio",
-            style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF0D47A1),
-        actions: [
-          IconButton(
-            icon: Icon(_vistaLista ? FontAwesomeIcons.gripVertical : FontAwesomeIcons.listUl,
-                color: Colors.white),
-            onPressed: () {
-              setState(() {
-                _vistaLista = !_vistaLista; // Alternar entre Lista y Grid
-              });
-            },
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF0D47A1), // Azul oscuro
-              Color(0xFF1F77D3), // Azul medio
-              Color(0xFF4AA3F3), // Azul claro
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: _contenido(),
-      ),
+    return StreamBuilder<Map<String, dynamic>>(
+        stream: _dataHolder.getStreamDeAjustes(),
+        builder: (context, snapshot) {
+          if(!snapshot.hasData){
+            return const Center(child: CircularProgressIndicator(color: Colors.white,));
+          }
+          final ajustes = snapshot.data!;
+          final modoOscuro = ajustes['modoOscuro'] ?? false;
+          final esquemaColor = ajustes['esquemaColor'] ?? 'Azul';
+
+          final Map<String, List<Color>> esquemasDeColor = {
+            'Azul': [Color(0xFF0D47A1), Color(0xFF1F77D3), Color(0xFF4AA3F3)],
+            'Verde': [Color(0xFF1B5E20), Color(0xFF4CAF50), Color(0xFF81C784)],
+            'Rojo': [Color(0xFFB71C1C), Color(0xFFE53935), Color(0xFFFFCDD2)],
+            'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
+          };
+          final Color fondoColor = modoOscuro ? Colors.black : esquemasDeColor[esquemaColor]![0];
+          final Color textoColor = modoOscuro ? Colors.white : Colors.black;
+          final double tamanoTexto = ajustes['tamanoTexto'] ?? 16.0;
+
+          return Theme(
+            data: ThemeData(
+              brightness: modoOscuro ? Brightness.dark : Brightness.light,
+              primaryColor: fondoColor,
+              textTheme: TextTheme(
+                bodyMedium: TextStyle(color: textoColor, fontFamily: 'Roboto', fontSize: tamanoTexto),
+              ),
+            ),
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text("Inicio",
+                    style: TextStyle(color: Colors.white)),
+                backgroundColor: fondoColor
+                ,
+                actions: [
+                  IconButton(
+                    icon: Icon(_vistaLista ? FontAwesomeIcons.gripVertical : FontAwesomeIcons.listUl,
+                        color: Colors.white),
+                    onPressed: () {
+                      setState(() {
+                        _vistaLista = !_vistaLista; // Alternar entre Lista y Grid
+                      });
+                    },
+                  ),
+                ],
+              ),
+              body: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: esquemasDeColor[esquemaColor]!,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: _contenido(tamanoTexto, textoColor),
+              ),
+            ),
+          );
+        }
     );
   }
 
-  Widget _contenido() {
+  Widget _contenido(double tamanoTexto, Color textColor) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance.collection('usuarios').snapshots(),
       builder: (context, snapshot) {
@@ -69,13 +100,13 @@ class _InicioState extends State<Inicio> {
         final usuarios = snapshot.data!.docs;
 
         return _vistaLista
-            ? _buildListView(usuarios)
-            : _buildGridView(usuarios);
+            ? _buildListView(usuarios, tamanoTexto, textColor)
+            : _buildGridView(usuarios, tamanoTexto, textColor);
       },
     );
   }
 
-  Widget _buildListView(List<QueryDocumentSnapshot> usuarios) {
+  Widget _buildListView(List<QueryDocumentSnapshot> usuarios, double tamanoTexto, Color textColor) {
     return ListView.separated(
       itemCount: usuarios.length,
       separatorBuilder: (context, index) => const SizedBox(height: 8),
@@ -93,10 +124,10 @@ class _InicioState extends State<Inicio> {
             backgroundColor: Colors.grey,
           ),
           title: Text('${usuario['nombre']} ${usuario['apellido']}',
-              style: const TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 16)),
+              style:  TextStyle(color: textColor, fontFamily: 'Roboto', fontSize: tamanoTexto)),
           subtitle: Text(
             'Fecha de nacimiento: ${usuario['fechaNacimiento']}\nTeléfono: ${usuario['telefono']}\nCiudad: ${usuario['ciudad']}',
-            style: const TextStyle(color: Colors.white, fontFamily: 'Roboto', fontSize: 14),
+            style:  TextStyle(color: textColor, fontFamily: 'Roboto', fontSize: tamanoTexto - 2),
             overflow: TextOverflow.ellipsis,
           ),
         );
@@ -104,7 +135,7 @@ class _InicioState extends State<Inicio> {
     );
   }
 
-  Widget _buildGridView(List<QueryDocumentSnapshot> usuarios) {
+  Widget _buildGridView(List<QueryDocumentSnapshot> usuarios, double tamanoTexto, Color textColor) {
     return GridView.builder(
       padding: const EdgeInsets.all(10),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -140,11 +171,11 @@ class _InicioState extends State<Inicio> {
                     Expanded(
                       child: Text(
                         '${usuario['nombre']} ${usuario['apellido']}',
-                        style: const TextStyle(
+                        style:  TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: tamanoTexto - 2,
                             fontFamily: 'Roboto',
-                            color: Color(0xFF0288D1)
+                            color: const Color(0xFF0288D1)
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -154,17 +185,17 @@ class _InicioState extends State<Inicio> {
                 const SizedBox(height: 8),
                 Text(
                   'Fecha: ${usuario['fechaNacimiento']}',
-                  style: const TextStyle(fontSize: 12, fontFamily: 'Roboto', color: Color(0xFF0288D1)),
+                  style:  TextStyle(fontSize: tamanoTexto - 4, fontFamily: 'Roboto', color: const Color(0xFF0288D1)),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Teléfono: ${usuario['telefono']}',
-                  style: const TextStyle(fontSize: 12, fontFamily: 'Roboto', color: Color(0xFF0288D1)),
+                  style:  TextStyle(fontSize: tamanoTexto - 4, fontFamily: 'Roboto', color: const Color(0xFF0288D1)),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Ciudad: ${usuario['ciudad']}',
-                  style: const TextStyle(fontSize: 12, fontFamily: 'Roboto', color: Color(0xFF0288D1)),
+                  style:  TextStyle(fontSize: tamanoTexto - 4, fontFamily: 'Roboto', color: const Color(0xFF0288D1)),
                 ),
               ],
             ),
