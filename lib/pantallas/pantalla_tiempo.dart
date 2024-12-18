@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../clases/data_holder.dart';
 
 enum EstadoTiempo { inicial, cargando, cargado, error }
 
@@ -19,6 +20,8 @@ class _PantallaTiempoState extends State<PantallaTiempo> {
   List<HoraTiempo> _datosTiempo = [];
   EstadoTiempo _estadoTiempo = EstadoTiempo.inicial;
   String? _mensajeError;
+  final DataHolder _dataHolder = DataHolder();
+
 
   static const String _etiquetaTemperatura = 'Temperatura: ';
   static const String _etiquetaHumedad = 'Humedad: ';
@@ -54,41 +57,67 @@ class _PantallaTiempoState extends State<PantallaTiempo> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: const Text('Pronóstico del Tiempo',
-              style: TextStyle(color: Colors.white)),
-          backgroundColor: const Color(0xFF0D47A1)),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF0D47A1),
-              Color(0xFF1F77D3),
-              Color(0xFF4AA3F3),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: _construirCuerpo(),
-      ),
-    );
+    return StreamBuilder<Map<String, dynamic>>(
+        stream: _dataHolder.getStreamDeAjustes(),
+        builder: (context, snapshot) {
+          if(!snapshot.hasData){
+            return const Center(child: CircularProgressIndicator(color: Colors.white,));
+          }
+          final ajustes = snapshot.data!;
+          final modoOscuro = ajustes['modoOscuro'] ?? false;
+          final esquemaColor = ajustes['esquemaColor'] ?? 'Azul';
+          final double tamanoTexto = ajustes['tamanoTexto'] ?? 16.0;
+          final Map<String, List<Color>> esquemasDeColor = {
+            'Azul': [Color(0xFF0D47A1), Color(0xFF1F77D3), Color(0xFF4AA3F3)],
+            'Verde': [Color(0xFF1B5E20), Color(0xFF4CAF50), Color(0xFF81C784)],
+            'Rojo': [Color(0xFFB71C1C), Color(0xFFE53935), Color(0xFFFFCDD2)],
+            'Amarillo': [Color(0xFFF57F17), Color(0xFFFFEB3B), Color(0xFFFFF176)],
+          };
+
+          final Color fondoColor = modoOscuro ? Colors.black : esquemasDeColor[esquemaColor]![0];
+          final Color textoColor = modoOscuro ? Colors.white : Colors.black;
+
+          return  Theme(
+              data: ThemeData(
+                brightness: modoOscuro ? Brightness.dark : Brightness.light,
+                primaryColor: fondoColor,
+                textTheme: TextTheme(
+                  bodyMedium: TextStyle(color: textoColor, fontFamily: 'Roboto', fontSize: tamanoTexto),
+                ),
+              ),
+              child: Scaffold(
+                appBar: AppBar(
+                    title: const Text('Pronóstico del Tiempo',
+                        style: TextStyle(color: Colors.white)),
+                    backgroundColor: fondoColor),
+                body: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: esquemasDeColor[esquemaColor]!,
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                  child: _construirCuerpo(tamanoTexto, textoColor),
+                ),
+              )
+          );
+        });
   }
 
-  Widget _construirCuerpo() {
+  Widget _construirCuerpo(double tamanoTexto, Color textColor) {
     switch (_estadoTiempo) {
       case EstadoTiempo.inicial:
-        return const Center(child: Text('Presiona el botón para cargar el tiempo',
-          style: TextStyle(color: Colors.white,fontFamily: 'Roboto'),
+        return  Center(child: Text('Presiona el botón para cargar el tiempo',
+          style: TextStyle(color: textColor,fontFamily: 'Roboto', fontSize: tamanoTexto),
         ));
       case EstadoTiempo.cargando:
-        return const Center(child: Column(
+        return  Center(child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: Colors.white),
-              SizedBox(height: 10),
-              Text("Cargando datos del clima...", style: TextStyle(color: Colors.white, fontFamily: 'Roboto'))
+              const CircularProgressIndicator(color: Colors.white),
+              const SizedBox(height: 10),
+              Text("Cargando datos del clima...", style: TextStyle(color: textColor, fontFamily: 'Roboto', fontSize: tamanoTexto))
             ]
         ));
       case EstadoTiempo.cargado:
@@ -113,22 +142,22 @@ class _PantallaTiempoState extends State<PantallaTiempo> {
                       child: ListTile(
                         dense: true,
                         title: Text('Hora: $horaFormateada',
-                          style: const TextStyle(fontSize: 18, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                          style:  TextStyle(fontSize: tamanoTexto + 2, color: const Color(0xFF0288D1), fontFamily: 'Roboto'),
                         ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               '$_etiquetaTemperatura${horaTiempo.temperatura.toStringAsFixed(1)}°C',
-                              style: const TextStyle(fontSize: 16, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                              style:  TextStyle(fontSize: tamanoTexto, color: const Color(0xFF0288D1), fontFamily: 'Roboto'),
                             ),
                             Text(
                               '$_etiquetaHumedad${horaTiempo.humedadRelativa}%',
-                              style: const TextStyle(fontSize: 16, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                              style:  TextStyle(fontSize: tamanoTexto, color: const Color(0xFF0288D1), fontFamily: 'Roboto'),
                             ),
                             Text(
                               '$_etiquetaPuntoRocio${horaTiempo.puntoRocio.toStringAsFixed(1)}°C',
-                              style: const TextStyle(fontSize: 16, color: Color(0xFF0288D1), fontFamily: 'Roboto'),
+                              style:  TextStyle(fontSize: tamanoTexto, color: const Color(0xFF0288D1), fontFamily: 'Roboto'),
                             ),
                           ],
                         ),
@@ -145,7 +174,7 @@ class _PantallaTiempoState extends State<PantallaTiempo> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text('Error: ${_mensajeError ?? "No se pudo cargar el clima"}',
-                style: const TextStyle(color: Colors.white, fontFamily: 'Roboto')),
+                style: TextStyle(color: textColor, fontFamily: 'Roboto', fontSize: tamanoTexto)),
           ),
         );
       default:
