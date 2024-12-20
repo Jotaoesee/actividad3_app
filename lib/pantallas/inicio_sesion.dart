@@ -1,9 +1,14 @@
+import 'dart:io';
 import 'package:actividad3_app/pantallas/home.dart';
 import 'package:actividad3_app/pantallas/registro.dart';
 import 'package:actividad3_app/personalizable/boton/boton_personalizado.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:universal_html/html.dart' as html;
+
 
 
 class InicioSesion extends StatefulWidget {
@@ -17,6 +22,7 @@ class _InicioSesionState extends State<InicioSesion> {
   final TextEditingController controladorDeEmail = TextEditingController();
   final TextEditingController controladorDeContrasena = TextEditingController();
 
+  String? fcmToken;
   bool esContrasenaVisible = false;
   bool _isLoading = false; // Indicador de carga para inicio de sesión
   final _formKey = GlobalKey<FormState>();
@@ -26,7 +32,7 @@ class _InicioSesionState extends State<InicioSesion> {
 
   // Función de validación y autenticación
   void _validarYIniciarSesion() async {
-    if(_formKey.currentState!.validate()){
+    if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
@@ -35,15 +41,23 @@ class _InicioSesionState extends State<InicioSesion> {
           email: controladorDeEmail.text,
           password: controladorDeContrasena.text,
         );
-        _mostrarMensaje("Inicio de sesión exitoso. Bienvenido, ${credential.user?.email}.", isSuccess: true);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
-        );
+
+        if (credential.user != null) {
+          _mostrarMensaje("Inicio de sesión exitoso. Bienvenido, ${credential.user!.email}.", isSuccess: true);
+          await handleFCMToken(credential.user!);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Home()),
+          );
+        } else {
+          throw Exception("Usuario no encontrado después de iniciar sesión.");
+        }
       } on FirebaseAuthException catch (e) {
+        print("Error FirebaseAuth: ${e.message}");
         _mostrarMensaje("Error: ${e.message}");
       } catch (e) {
-        _mostrarMensaje("Ocurrió un error inesperado.");
+        print("Error inesperado: $e");
+        _mostrarMensaje("Ocurrió un error inesperado. Por favor, intenta nuevamente.");
       } finally {
         setState(() {
           _isLoading = false;
@@ -51,6 +65,7 @@ class _InicioSesionState extends State<InicioSesion> {
       }
     }
   }
+
 
   // Mostrar mensajes de error o éxito
   void _mostrarMensaje(String mensaje, {bool isSuccess = false}) {
@@ -60,6 +75,87 @@ class _InicioSesionState extends State<InicioSesion> {
         backgroundColor: isSuccess ? Colors.green : Colors.red,
       ),
     );
+  }
+
+  Future<void> handleFCMToken(User user) async {
+    final messaging = FirebaseMessaging.instance;
+    final firestore = FirebaseFirestore.instance;
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      announcement: false,
+      badge: true,
+      carPlay: false,
+      criticalAlert: false,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+    } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+      print('User granted provisional permission');
+    } else {
+      print('User declined or has not accepted permission');
+    }
+
+    String? fcmToken = await messaging.getToken();
+
+    if (fcmToken != null) {
+      try {
+        // Obtiene el User Agent del navegador
+        String userAgent = html.window.navigator.userAgent;
+        String platform = _getPlatformFromUserAgent(userAgent);
+
+        await firestore.collection('usuarios').doc(user.uid).collection('dispositivos').doc(fcmToken).set({
+          'token': fcmToken,
+          'platform': platform, // Usa la plataforma obtenida del User Agent
+          'lastUpdated': FieldValue.serverTimestamp(),
+        });
+        print("Token FCM guardado en Firestore: $fcmToken");
+      } catch (e) {
+        print("Error al guardar el token FCM en Firestore: $e");
+      }
+    } else {
+      print("Falló al obtener el token FCM");
+    }
+
+    messaging.onTokenRefresh.listen((newToken) async {
+      fcmToken = newToken;
+      if (fcmToken != null) {
+        try {
+          String userAgent = html.window.navigator.userAgent;
+          String platform = _getPlatformFromUserAgent(userAgent);
+          await firestore.collection('usuarios').doc(user.uid).collection('dispositivos').doc(fcmToken).set({
+            'token': fcmToken,
+            'platform': platform,
+            'lastUpdated': FieldValue.serverTimestamp(),
+          });
+          print("Token FCM actualizado en Firestore: $fcmToken");
+        } catch (e) {
+          print("Error al actualizar el token FCM en Firestore: $e");
+        }
+      }
+    });
+  }
+
+
+
+
+  String _getPlatformFromUserAgent(String userAgent) {
+    if (userAgent.contains('Android')) {
+      return 'Android';
+    } else if (userAgent.contains('iPhone') || userAgent.contains('iPad') || userAgent.contains('iPod')) {
+      return 'iOS';
+    } else if (userAgent.contains('Windows')) {
+      return 'Windows';
+    } else if (userAgent.contains('Macintosh')) {
+      return 'macOS';
+    } else if (userAgent.contains('Linux')) {
+      return 'Linux';
+    } else {
+      return 'Web (Unknown)';
+    }
   }
 
   Widget _campoDeTexto({
