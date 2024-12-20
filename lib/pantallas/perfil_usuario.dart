@@ -64,7 +64,7 @@ class _PerfilUsuarioState extends State<PerfilUsuario> {
   Future<void> _cargarDatosUsuario() async {
     try {
       FirebaseAdmin firebaseAdmin = FirebaseAdmin();
-      Map<String, dynamic> usuarioData = await firebaseAdmin.obtenerUsuario();  // Asegúrate de tener este método en tu FirebaseAdmin
+      Map<String, dynamic> usuarioData = await firebaseAdmin.obtenerUsuario();
       if(mounted){
         setState(() {
           _nombre = usuarioData['nombre'] ?? 'Nombre de Usuario';

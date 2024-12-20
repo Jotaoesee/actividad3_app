@@ -35,16 +35,18 @@ class _HomeState extends State<Home> {
   }
 
   void _cargarUsuario() async {
-    // Cargar los datos del usuario desde FirebaseAuth
     FirebaseAuth.instance.authStateChanges().listen((usuario) async {
       if (usuario != null) {
-        // Obtén los datos adicionales del usuario desde Firestore
-        FirebaseAdmin firebaseAdmin = FirebaseAdmin();
-        String? nombre = await firebaseAdmin.obtenerNombreUsuario();
-        setState(() {
-          _usuario = usuario;
-          _nombreUsuario = nombre; // Asigna el nombre obtenido
-        });
+        try {
+          FirebaseAdmin firebaseAdmin = FirebaseAdmin();
+          String? nombre = await firebaseAdmin.obtenerNombreUsuario();
+          setState(() {
+            _usuario = usuario;
+            _nombreUsuario = nombre;
+          });
+        } catch (e) {
+          print("Error al cargar el nombre del usuario: $e");
+        }
       } else {
         setState(() {
           _usuario = null;
@@ -150,11 +152,17 @@ class _HomeState extends State<Home> {
             leading: const Icon(Icons.assignment_ind),
             title: const Text('Datos adicionales'),
             onTap: () {
-              Navigator.pop(context); // Cierra el Drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => EditarDatosAdicionales(userId: "userId")), // Navegar directamente a PantallaTiempo
-              );
+              Navigator.pop(context);
+              if (_usuario != null) { // Comprobar que el usuario no sea nulo
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditarDatosAdicionales(userId: _usuario!.uid), // Pasar el UID
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Debes iniciar sesión para acceder a esta función')));
+              }
             },
           ),
           ListTile(

@@ -80,22 +80,16 @@ class FirebaseAdmin {
   // Función para guardar un usuario en Firestore
   Future<void> guardarUsuario(Map<String, dynamic> usuarioData) async {
     try {
-      // Obtén el usuario actual autenticado
-      User? usuario = _auth.currentUser;
-      if (usuario == null) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userUid = user.uid;
+        await _firestore.collection('usuarios').doc(userUid).set(usuarioData);
+      } else {
         throw Exception("Usuario no autenticado");
       }
-
-      // Referencia al documento del usuario en Firestore (usando su UID)
-      DocumentReference usuarioRef = _firestore.collection('usuarios').doc(usuario.uid);
-
-      // Guardar los datos del usuario en Firestore
-      await usuarioRef.set(usuarioData);
-
-      print("Usuario guardado exitosamente");
     } catch (e) {
       print("Error al guardar usuario: $e");
-      throw Exception("Error al guardar usuario");
+      rethrow;
     }
   }
 
